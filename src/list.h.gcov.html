@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-05-20</td>
+            <td class="headerValue">2015-05-22</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">5</td>
@@ -109,11 +109,11 @@
 <span class="lineNum">      38 </span>                :            : #ifdef LIST_LOCK
 <a name="39"><span class="lineNum">      39 </span>                :            : void list_init(struct list *list);</a>
 <span class="lineNum">      40 </span>                :            : #else
-<span class="lineNum">      41 </span>                :<span class="lineCov">   58800754 : INLINE void list_init(struct list *list)</span>
+<span class="lineNum">      41 </span>                :<span class="lineCov">   62046295 : INLINE void list_init(struct list *list)</span>
 <span class="lineNum">      42 </span>                :            : {
-<span class="lineNum">      43 </span>                :<span class="lineCov">   58800754 :     list-&gt;head = NULL;</span>
-<span class="lineNum">      44 </span>                :<span class="lineCov">   58800754 :     list-&gt;tail = NULL;</span>
-<span class="lineNum">      45 </span>                :<span class="lineCov">   58800754 : }</span>
+<span class="lineNum">      43 </span>                :<span class="lineCov">   62046295 :     list-&gt;head = NULL;</span>
+<span class="lineNum">      44 </span>                :<span class="lineCov">   62046295 :     list-&gt;tail = NULL;</span>
+<span class="lineNum">      45 </span>                :<span class="lineCov">   62046295 : }</span>
 <span class="lineNum">      46 </span>                :            : #endif
 <span class="lineNum">      47 </span>                :            : 
 <span class="lineNum">      48 </span>                :            : void list_push_front(struct list *list, struct list_elem *e);
@@ -131,25 +131,25 @@
 <span class="lineNum">      60 </span>                :            : struct list_elem *list_begin(struct list *list);
 <a name="61"><span class="lineNum">      61 </span>                :            : struct list_elem *list_end(struct list *list);</a>
 <span class="lineNum">      62 </span>                :            : #else
-<span class="lineNum">      63 </span>                :<span class="lineCov">  476333147 : INLINE struct list_elem *list_begin(struct list *list)</span>
+<span class="lineNum">      63 </span>                :<span class="lineCov">  499568323 : INLINE struct list_elem *list_begin(struct list *list)</span>
 <span class="lineNum">      64 </span>                :            : {
-<span class="lineNum">      65 </span>                :<span class="lineCov">  476333147 :     return list-&gt;head;</span>
+<span class="lineNum">      65 </span>                :<span class="lineCov">  499568323 :     return list-&gt;head;</span>
 <a name="66"><span class="lineNum">      66 </span>                :            : }</a>
 <span class="lineNum">      67 </span>                :            : 
-<span class="lineNum">      68 </span>                :<span class="lineCov">   45721641 : INLINE struct list_elem *list_end(struct list *list)</span>
+<span class="lineNum">      68 </span>                :<span class="lineCov">   46865802 : INLINE struct list_elem *list_end(struct list *list)</span>
 <span class="lineNum">      69 </span>                :            : {
-<span class="lineNum">      70 </span>                :<span class="lineCov">   45721641 :     return list-&gt;tail;</span>
+<span class="lineNum">      70 </span>                :<span class="lineCov">   46865802 :     return list-&gt;tail;</span>
 <span class="lineNum">      71 </span>                :            : }
 <a name="72"><span class="lineNum">      72 </span>                :            : #endif</a>
 <span class="lineNum">      73 </span>                :            : 
-<span class="lineNum">      74 </span>                :<span class="lineCov"> 1823056697 : INLINE struct list_elem *list_next(struct list_elem *e)</span>
+<span class="lineNum">      74 </span>                :<span class="lineCov"> 1944732247 : INLINE struct list_elem *list_next(struct list_elem *e)</span>
 <span class="lineNum">      75 </span>                :            : {
-<span class="lineNum">      76 </span>                :<span class="lineCov"> 1823056697 :     return e-&gt;next;</span>
+<span class="lineNum">      76 </span>                :<span class="lineCov"> 1944732247 :     return e-&gt;next;</span>
 <a name="77"><span class="lineNum">      77 </span>                :            : }</a>
 <span class="lineNum">      78 </span>                :            : 
-<span class="lineNum">      79 </span>                :<span class="lineCov">   35144491 : INLINE struct list_elem *list_prev(struct list_elem *e)</span>
+<span class="lineNum">      79 </span>                :<span class="lineCov">   36988823 : INLINE struct list_elem *list_prev(struct list_elem *e)</span>
 <span class="lineNum">      80 </span>                :            : {
-<span class="lineNum">      81 </span>                :<span class="lineCov">   35144491 :     return e-&gt;prev;</span>
+<span class="lineNum">      81 </span>                :<span class="lineCov">   36988823 :     return e-&gt;prev;</span>
 <span class="lineNum">      82 </span>                :            : }
 <span class="lineNum">      83 </span>                :            : 
 <span class="lineNum">      84 </span>                :            : #ifdef __cplusplus
