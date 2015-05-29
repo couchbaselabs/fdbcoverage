@@ -31,13 +31,13 @@
             <td class="headerValue">coverage.info.cleaned</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">60</td>
+            <td class="headerCovTableEntry">59</td>
             <td class="headerCovTableEntry">64</td>
-            <td class="headerCovTableEntryHi">93.8 %</td>
+            <td class="headerCovTableEntryHi">92.2 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-05-22</td>
+            <td class="headerValue">2015-05-29</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">12</td>
@@ -49,9 +49,9 @@
             <td></td>
             <td></td>
             <td class="headerItem">Branches:</td>
-            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntry">14</td>
             <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntryHi">93.8 %</td>
+            <td class="headerCovTableEntryMed">87.5 %</td>
           </tr>
           <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -87,29 +87,29 @@
 <span class="lineNum">      16 </span>                :            : #endif
 <a name="17"><span class="lineNum">      17 </span>                :            : </a>
 <span class="lineNum">      18 </span>                :            : #ifdef _HASH_TREE
-<span class="lineNum">      19 </span>                :<span class="lineCov">  142877498 : static int _hash_cmp_wrap(struct avl_node *a, struct avl_node *b, void *aux)</span>
+<span class="lineNum">      19 </span>                :<span class="lineCov">  137482715 : static int _hash_cmp_wrap(struct avl_node *a, struct avl_node *b, void *aux)</span>
 <span class="lineNum">      20 </span>                :            : {
 <span class="lineNum">      21 </span>                :            :     return ((struct hash *)aux)-&gt;cmp(
 <span class="lineNum">      22 </span>                :            :         _get_entry(a, struct hash_elem, avl),
-<span class="lineNum">      23 </span>                :<span class="lineCov">  142877498 :         _get_entry(b, struct hash_elem, avl));</span>
+<span class="lineNum">      23 </span>                :<span class="lineCov">  137482715 :         _get_entry(b, struct hash_elem, avl));</span>
 <span class="lineNum">      24 </span>                :            : }
 <a name="25"><span class="lineNum">      25 </span>                :            : #endif</a>
 <span class="lineNum">      26 </span>                :            : 
-<span class="lineNum">      27 </span>                :<span class="lineCov">      16254 : void hash_init(struct hash *hash, int nbuckets, hash_hash_func *hash_func, hash_cmp_func *cmp_func)</span>
+<span class="lineNum">      27 </span>                :<span class="lineCov">      16114 : void hash_init(struct hash *hash, int nbuckets, hash_hash_func *hash_func, hash_cmp_func *cmp_func)</span>
 <span class="lineNum">      28 </span>                :            : {
 <span class="lineNum">      29 </span>                :            :     size_t i;
-<span class="lineNum">      30 </span>                :<span class="lineCov">      16254 :     hash-&gt;nbuckets = nbuckets;</span>
+<span class="lineNum">      30 </span>                :<span class="lineCov">      16114 :     hash-&gt;nbuckets = nbuckets;</span>
 <span class="lineNum">      31 </span>                :            : #ifdef _HASH_TREE
-<span class="lineNum">      32 </span>                :<span class="lineCov">      16254 :     hash-&gt;buckets = (struct avl_tree *)malloc(sizeof(struct avl_tree) * hash-&gt;nbuckets);</span>
+<span class="lineNum">      32 </span>                :<span class="lineCov">      16114 :     hash-&gt;buckets = (struct avl_tree *)malloc(sizeof(struct avl_tree) * hash-&gt;nbuckets);</span>
 <span class="lineNum">      33 </span>                :            : #else
 <span class="lineNum">      34 </span>                :            :     hash-&gt;buckets = (struct list *)malloc(sizeof(struct list) * hash-&gt;nbuckets);
 <span class="lineNum">      35 </span>                :            : #endif
 <span class="lineNum">      36 </span>                :            : 
 <span class="lineNum">      37 </span>                :            :     IFDEF_LOCK( hash-&gt;locks = (spin_t*)malloc(sizeof(spin_t) * hash-&gt;nbuckets) );
 <span class="lineNum">      38 </span>                :            : 
-<span class="lineNum">      39 </span>        [<span class="branchCov" title="Branch 0 was taken 23696166 times"> + </span><span class="branchCov" title="Branch 1 was taken 16254 times"> + </span>]:<span class="lineCov">   23712420 :     for (i=0;i&lt;hash-&gt;nbuckets;++i){</span>
+<span class="lineNum">      39 </span>        [<span class="branchCov" title="Branch 0 was taken 23450226 times"> + </span><span class="branchCov" title="Branch 1 was taken 16114 times"> + </span>]:<span class="lineCov">   23466340 :     for (i=0;i&lt;hash-&gt;nbuckets;++i){</span>
 <span class="lineNum">      40 </span>                :            : #ifdef _HASH_TREE
-<span class="lineNum">      41 </span>                :<span class="lineCov">   23696166 :         avl_init(hash-&gt;buckets + i, (void *)hash);</span>
+<span class="lineNum">      41 </span>                :<span class="lineCov">   23450226 :         avl_init(hash-&gt;buckets + i, (void *)hash);</span>
 <span class="lineNum">      42 </span>                :            : #else
 <span class="lineNum">      43 </span>                :            :         list_init(hash-&gt;buckets + i);
 <span class="lineNum">      44 </span>                :            : #endif
@@ -117,50 +117,50 @@
 <span class="lineNum">      46 </span>                :            :         IFDEF_LOCK( spin_init(hash-&gt;locks + i); );
 <span class="lineNum">      47 </span>                :            :     }
 <span class="lineNum">      48 </span>                :            : 
-<span class="lineNum">      49 </span>                :<span class="lineCov">      16254 :     hash-&gt;hash_func = hash_func;</span>
-<span class="lineNum">      50 </span>                :<span class="lineCov">      16254 :     hash-&gt;cmp = cmp_func;</span>
-<a name="51"><span class="lineNum">      51 </span>                :<span class="lineCov">      16254 : }</span></a>
+<span class="lineNum">      49 </span>                :<span class="lineCov">      16114 :     hash-&gt;hash_func = hash_func;</span>
+<span class="lineNum">      50 </span>                :<span class="lineCov">      16114 :     hash-&gt;cmp = cmp_func;</span>
+<a name="51"><span class="lineNum">      51 </span>                :<span class="lineCov">      16114 : }</span></a>
 <span class="lineNum">      52 </span>                :            : 
-<span class="lineNum">      53 </span>                :<span class="lineCov">   21335608 : static void _hash_insert(struct hash *hash, struct hash_elem *e,</span>
+<span class="lineNum">      53 </span>                :<span class="lineCov">   20852986 : static void _hash_insert(struct hash *hash, struct hash_elem *e,</span>
 <span class="lineNum">      54 </span>                :            :                          int bucket) {
 <span class="lineNum">      55 </span>                :            :     IFDEF_LOCK( spin_lock(hash-&gt;locks + bucket) );
 <span class="lineNum">      56 </span>                :            : 
 <span class="lineNum">      57 </span>                :            : #ifdef _HASH_TREE
-<span class="lineNum">      58 </span>                :<span class="lineCov">   21335608 :     avl_insert(hash-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
+<span class="lineNum">      58 </span>                :<span class="lineCov">   20852986 :     avl_insert(hash-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
 <span class="lineNum">      59 </span>                :            : #else
 <span class="lineNum">      60 </span>                :            :     list_push_back(hash-&gt;buckets + bucket, &amp;e-&gt;list_elem);
 <span class="lineNum">      61 </span>                :            : #endif
 <span class="lineNum">      62 </span>                :            : 
 <span class="lineNum">      63 </span>                :            :     IFDEF_LOCK( spin_unlock(hash-&gt;locks + bucket) );
-<a name="64"><span class="lineNum">      64 </span>                :<span class="lineCov">   21334911 : }</span></a>
+<a name="64"><span class="lineNum">      64 </span>                :<span class="lineCov">   20852565 : }</span></a>
 <span class="lineNum">      65 </span>                :            : 
-<span class="lineNum">      66 </span>                :<span class="lineCov">   14005530 : void hash_insert(struct hash *hash, struct hash_elem *e)</span>
+<span class="lineNum">      66 </span>                :<span class="lineCov">   13744698 : void hash_insert(struct hash *hash, struct hash_elem *e)</span>
 <span class="lineNum">      67 </span>                :            : {
-<span class="lineNum">      68 </span>                :<span class="lineCov">   14005530 :     _hash_insert(hash, e, hash-&gt;hash_func(hash, e));</span>
-<a name="69"><span class="lineNum">      69 </span>                :<span class="lineCov">   14005183 : }</span></a>
+<span class="lineNum">      68 </span>                :<span class="lineCov">   13744698 :     _hash_insert(hash, e, hash-&gt;hash_func(hash, e));</span>
+<a name="69"><span class="lineNum">      69 </span>                :<span class="lineCov">   13744543 : }</span></a>
 <span class="lineNum">      70 </span>                :            : 
-<span class="lineNum">      71 </span>                :<span class="lineCov">    7330291 : void hash_insert_by_hash_val(struct hash *hash, struct hash_elem *e,</span>
+<span class="lineNum">      71 </span>                :<span class="lineCov">    7108421 : void hash_insert_by_hash_val(struct hash *hash, struct hash_elem *e,</span>
 <span class="lineNum">      72 </span>                :            :                              uint32_t hash_val)
 <span class="lineNum">      73 </span>                :            : {
-<span class="lineNum">      74 </span>                :<span class="lineCov">    7330291 :     int bucket = hash_val % ((uint64_t)hash-&gt;nbuckets);</span>
-<span class="lineNum">      75 </span>                :<span class="lineCov">    7330291 :     _hash_insert(hash, e, bucket);</span>
-<span class="lineNum">      76 </span>                :<span class="lineCov">    7330254 : }</span>
+<span class="lineNum">      74 </span>                :<span class="lineCov">    7108421 :     int bucket = hash_val % ((uint64_t)hash-&gt;nbuckets);</span>
+<span class="lineNum">      75 </span>                :<span class="lineCov">    7108421 :     _hash_insert(hash, e, bucket);</span>
+<span class="lineNum">      76 </span>                :<span class="lineCov">    7108357 : }</span>
 <a name="77"><span class="lineNum">      77 </span>                :            : </a>
 <span class="lineNum">      78 </span>                :            : 
-<span class="lineNum">      79 </span>                :<span class="lineCov">   90840275 : static struct hash_elem * _hash_find(struct hash *ht, struct hash_elem *e,</span>
+<span class="lineNum">      79 </span>                :<span class="lineCov">   88979697 : static struct hash_elem * _hash_find(struct hash *ht, struct hash_elem *e,</span>
 <span class="lineNum">      80 </span>                :            :                                      int bucket)
 <span class="lineNum">      81 </span>                :            : {
-<span class="lineNum">      82 </span>                :<span class="lineCov">   90840275 :     struct hash_elem *elem = NULL;</span>
+<span class="lineNum">      82 </span>                :<span class="lineCov">   88979697 :     struct hash_elem *elem = NULL;</span>
 <span class="lineNum">      83 </span>                :            : 
 <span class="lineNum">      84 </span>                :            :     IFDEF_LOCK( spin_lock(ht-&gt;locks + bucket) );
 <span class="lineNum">      85 </span>                :            : 
 <span class="lineNum">      86 </span>                :            : #ifdef _HASH_TREE
 <span class="lineNum">      87 </span>                :            :     struct avl_node *node;
-<span class="lineNum">      88 </span>                :<span class="lineCov">   90840275 :     node = avl_search(ht-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
-<span class="lineNum">      89 </span>        [<span class="branchCov" title="Branch 0 was taken 60515364 times"> + </span><span class="branchCov" title="Branch 1 was taken 30367981 times"> + </span>]:<span class="lineCov">   90883345 :     if (node) {</span>
+<span class="lineNum">      88 </span>                :<span class="lineCov">   88979697 :     node = avl_search(ht-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
+<span class="lineNum">      89 </span>        [<span class="branchCov" title="Branch 0 was taken 59076924 times"> + </span><span class="branchCov" title="Branch 1 was taken 29944450 times"> + </span>]:<span class="lineCov">   89021374 :     if (node) {</span>
 <span class="lineNum">      90 </span>                :            :         IFDEF_LOCK( spin_unlock(ht-&gt;locks + bucket) );
-<span class="lineNum">      91 </span>                :<span class="lineCov">   60515364 :         elem = _get_entry(node, struct hash_elem, avl);</span>
-<span class="lineNum">      92 </span>                :<span class="lineCov">   60515364 :         return elem;</span>
+<span class="lineNum">      91 </span>                :<span class="lineCov">   59076924 :         elem = _get_entry(node, struct hash_elem, avl);</span>
+<span class="lineNum">      92 </span>                :<span class="lineCov">   59076924 :         return elem;</span>
 <span class="lineNum">      93 </span>                :            :     }
 <span class="lineNum">      94 </span>                :            : #else
 <span class="lineNum">      95 </span>                :            :     struct list_elem *le = list_begin(ht-&gt;buckets + bucket);
@@ -175,25 +175,25 @@
 <span class="lineNum">     104 </span>                :            : #endif
 <span class="lineNum">     105 </span>                :            : 
 <span class="lineNum">     106 </span>                :            :     IFDEF_LOCK( spin_unlock(ht-&gt;locks + bucket) );
-<span class="lineNum">     107 </span>                :<span class="lineCov">   30367981 :     return NULL;</span>
+<span class="lineNum">     107 </span>                :<span class="lineCov">   29944450 :     return NULL;</span>
 <a name="108"><span class="lineNum">     108 </span>                :            : }</a>
 <span class="lineNum">     109 </span>                :            : 
-<span class="lineNum">     110 </span>                :<span class="lineCov">   80152612 : struct hash_elem * hash_find(struct hash *ht, struct hash_elem *e)</span>
+<span class="lineNum">     110 </span>                :<span class="lineCov">   78611363 : struct hash_elem * hash_find(struct hash *ht, struct hash_elem *e)</span>
 <span class="lineNum">     111 </span>                :            : {
-<span class="lineNum">     112 </span>                :<span class="lineCov">   80152612 :     return _hash_find(ht, e, ht-&gt;hash_func(ht, e));</span>
+<span class="lineNum">     112 </span>                :<span class="lineCov">   78611363 :     return _hash_find(ht, e, ht-&gt;hash_func(ht, e));</span>
 <a name="113"><span class="lineNum">     113 </span>                :            : }</a>
 <span class="lineNum">     114 </span>                :            : 
-<span class="lineNum">     115 </span>                :<span class="lineCov">   10762038 : struct hash_elem * hash_find_by_hash_val(struct hash *ht, struct hash_elem *e,</span>
+<span class="lineNum">     115 </span>                :<span class="lineCov">   10420769 : struct hash_elem * hash_find_by_hash_val(struct hash *ht, struct hash_elem *e,</span>
 <span class="lineNum">     116 </span>                :            :                                          uint32_t hash_val)
 <span class="lineNum">     117 </span>                :            : {
-<span class="lineNum">     118 </span>                :<span class="lineCov">   10762038 :     int bucket = hash_val % ((uint64_t)ht-&gt;nbuckets);</span>
-<span class="lineNum">     119 </span>                :<span class="lineCov">   10762038 :     return _hash_find(ht, e, bucket);</span>
+<span class="lineNum">     118 </span>                :<span class="lineCov">   10420769 :     int bucket = hash_val % ((uint64_t)ht-&gt;nbuckets);</span>
+<span class="lineNum">     119 </span>                :<span class="lineCov">   10420769 :     return _hash_find(ht, e, bucket);</span>
 <a name="120"><span class="lineNum">     120 </span>                :            : }</a>
 <span class="lineNum">     121 </span>                :            : 
-<span class="lineNum">     122 </span>                :<span class="lineCov">        166 : void *hash_scan(struct hash *hash, hash_check_func *check_func, void *ctx)</span>
+<span class="lineNum">     122 </span>                :<span class="lineCov">        165 : void *hash_scan(struct hash *hash, hash_check_func *check_func, void *ctx)</span>
 <span class="lineNum">     123 </span>                :            : {
 <span class="lineNum">     124 </span>                :            :     size_t i;
-<span class="lineNum">     125 </span>                :<span class="lineCov">        166 :     void *ret = NULL;</span>
+<span class="lineNum">     125 </span>                :<span class="lineCov">        165 :     void *ret = NULL;</span>
 <span class="lineNum">     126 </span>                :            : 
 <span class="lineNum">     127 </span>                :            : #ifdef _HASH_TREE
 <span class="lineNum">     128 </span>                :            :     struct avl_node *node;
@@ -203,14 +203,14 @@
 <span class="lineNum">     132 </span>                :            : 
 <span class="lineNum">     133 </span>                :            :     struct hash_elem *h;
 <span class="lineNum">     134 </span>                :            : 
-<span class="lineNum">     135 </span>        [<span class="branchCov" title="Branch 0 was taken 166057 times"> + </span><span class="branchCov" title="Branch 1 was taken 155 times"> + </span>]:<span class="lineCov">     166212 :     for (i=0;i&lt;hash-&gt;nbuckets;++i){</span>
+<span class="lineNum">     135 </span>        [<span class="branchCov" title="Branch 0 was taken 165033 times"> + </span><span class="branchCov" title="Branch 1 was taken 154 times"> + </span>]:<span class="lineCov">     165187 :     for (i=0;i&lt;hash-&gt;nbuckets;++i){</span>
 <span class="lineNum">     136 </span>                :            : #ifdef _HASH_TREE
-<span class="lineNum">     137 </span>                :<span class="lineCov">     166057 :         node = avl_first(hash-&gt;buckets + i);</span>
-<span class="lineNum">     138 </span>        [<span class="branchCov" title="Branch 0 was taken 769 times"> + </span><span class="branchCov" title="Branch 1 was taken 166046 times"> + </span>]:<span class="lineCov">     166815 :         while(node){</span>
-<span class="lineNum">     139 </span>                :<span class="lineCov">        769 :             h = _get_entry(node, struct hash_elem, avl);</span>
-<span class="lineNum">     140 </span>                :<span class="lineCov">        769 :             node = avl_next(node);</span>
-<span class="lineNum">     141 </span>                :<span class="lineCov">        769 :             ret = check_func(h, ctx);</span>
-<span class="lineNum">     142 </span>        [<span class="branchCov" title="Branch 0 was taken 11 times"> + </span><span class="branchCov" title="Branch 1 was taken 758 times"> + </span>]:<span class="lineCov">        769 :             if (ret) {</span>
+<span class="lineNum">     137 </span>                :<span class="lineCov">     165033 :         node = avl_first(hash-&gt;buckets + i);</span>
+<span class="lineNum">     138 </span>        [<span class="branchCov" title="Branch 0 was taken 767 times"> + </span><span class="branchCov" title="Branch 1 was taken 165022 times"> + </span>]:<span class="lineCov">     165789 :         while(node){</span>
+<span class="lineNum">     139 </span>                :<span class="lineCov">        767 :             h = _get_entry(node, struct hash_elem, avl);</span>
+<span class="lineNum">     140 </span>                :<span class="lineCov">        767 :             node = avl_next(node);</span>
+<span class="lineNum">     141 </span>                :<span class="lineCov">        767 :             ret = check_func(h, ctx);</span>
+<span class="lineNum">     142 </span>        [<span class="branchCov" title="Branch 0 was taken 11 times"> + </span><span class="branchCov" title="Branch 1 was taken 756 times"> + </span>]:<span class="lineCov">        767 :             if (ret) {</span>
 <span class="lineNum">     143 </span>                :<span class="lineCov">         11 :                 return ret;</span>
 <span class="lineNum">     144 </span>                :            :             }
 <span class="lineNum">     145 </span>                :            :         }
@@ -228,24 +228,24 @@
 <span class="lineNum">     157 </span>                :            : 
 <span class="lineNum">     158 </span>                :            : #endif
 <span class="lineNum">     159 </span>                :            :     }
-<span class="lineNum">     160 </span>                :<span class="lineCov">        155 :     return ret;</span>
+<span class="lineNum">     160 </span>                :<span class="lineCov">        154 :     return ret;</span>
 <a name="161"><span class="lineNum">     161 </span>                :            : }</a>
 <span class="lineNum">     162 </span>                :            : 
-<span class="lineNum">     163 </span>                :<span class="lineCov">   21335223 : struct hash_elem * hash_remove(struct hash *hash, struct hash_elem *e)</span>
+<span class="lineNum">     163 </span>                :<span class="lineCov">   20852632 : struct hash_elem * hash_remove(struct hash *hash, struct hash_elem *e)</span>
 <span class="lineNum">     164 </span>                :            : {
-<span class="lineNum">     165 </span>                :<span class="lineCov">   21335223 :     int bucket = hash-&gt;hash_func(hash, e);</span>
+<span class="lineNum">     165 </span>                :<span class="lineCov">   20852632 :     int bucket = hash-&gt;hash_func(hash, e);</span>
 <span class="lineNum">     166 </span>                :            :     struct hash_elem *hash_elem;
 <span class="lineNum">     167 </span>                :            : 
 <span class="lineNum">     168 </span>                :            :     IFDEF_LOCK( spin_lock(hash-&gt;locks + bucket) );
 <span class="lineNum">     169 </span>                :            : 
 <span class="lineNum">     170 </span>                :            : #ifdef _HASH_TREE
 <span class="lineNum">     171 </span>                :            :     struct avl_node *node;
-<span class="lineNum">     172 </span>                :<span class="lineCov">   21335397 :     node = avl_search(hash-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
-<span class="lineNum">     173 </span>        [<span class="branchCov" title="Branch 0 was taken 21335212 times"> + </span><span class="branchCov" title="Branch 1 was taken 1 time"> + </span>]:<span class="lineCov">   21335213 :     if (node) {</span>
-<span class="lineNum">     174 </span>                :<span class="lineCov">   21335212 :         avl_remove(hash-&gt;buckets + bucket, node);</span>
+<span class="lineNum">     172 </span>                :<span class="lineCov">   20852524 :     node = avl_search(hash-&gt;buckets + bucket, &amp;e-&gt;avl, _hash_cmp_wrap);</span>
+<span class="lineNum">     173 </span>        [<span class="branchCov" title="Branch 0 was taken 20851868 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">   20851868 :     if (node) {</span>
+<span class="lineNum">     174 </span>                :<span class="lineCov">   20851868 :         avl_remove(hash-&gt;buckets + bucket, node);</span>
 <span class="lineNum">     175 </span>                :            :         IFDEF_LOCK( spin_unlock(hash-&gt;locks + bucket) );
-<span class="lineNum">     176 </span>                :<span class="lineCov">   21334780 :         hash_elem = _get_entry(node, struct hash_elem, avl);</span>
-<span class="lineNum">     177 </span>                :<span class="lineCov">   21334780 :         return hash_elem;</span>
+<span class="lineNum">     176 </span>                :<span class="lineCov">   20851607 :         hash_elem = _get_entry(node, struct hash_elem, avl);</span>
+<span class="lineNum">     177 </span>                :<span class="lineCov">   20851607 :         return hash_elem;</span>
 <span class="lineNum">     178 </span>                :            :     }
 <span class="lineNum">     179 </span>                :            : 
 <span class="lineNum">     180 </span>                :            : #else
@@ -266,14 +266,14 @@
 <span class="lineNum">     195 </span>                :            : 
 <span class="lineNum">     196 </span>                :            :     IFDEF_LOCK( spin_unlock(hash-&gt;locks + bucket) );
 <span class="lineNum">     197 </span>                :            : 
-<span class="lineNum">     198 </span>                :<span class="lineCov">          1 :     return NULL;</span>
+<span class="lineNum">     198 </span>                :<span class="lineNoCov">          0 :     return NULL;</span>
 <a name="199"><span class="lineNum">     199 </span>                :            : }</a>
 <span class="lineNum">     200 </span>                :            : 
-<span class="lineNum">     201 </span>                :<span class="lineCov">      16232 : void hash_free(struct hash *hash)</span>
+<span class="lineNum">     201 </span>                :<span class="lineCov">      16092 : void hash_free(struct hash *hash)</span>
 <span class="lineNum">     202 </span>                :            : {
-<span class="lineNum">     203 </span>                :<span class="lineCov">      16232 :     free(hash-&gt;buckets);</span>
+<span class="lineNum">     203 </span>                :<span class="lineCov">      16092 :     free(hash-&gt;buckets);</span>
 <span class="lineNum">     204 </span>                :            :     IFDEF_LOCK( free((void *)hash-&gt;locks) );
-<a name="205"><span class="lineNum">     205 </span>                :<span class="lineCov">      16232 : }</span></a>
+<a name="205"><span class="lineNum">     205 </span>                :<span class="lineCov">      16092 : }</span></a>
 <span class="lineNum">     206 </span>                :            : 
 <span class="lineNum">     207 </span>                :<span class="lineCov">        284 : void hash_free_active(struct hash *hash, hash_free_func *free_func)</span>
 <span class="lineNum">     208 </span>                :            : {
