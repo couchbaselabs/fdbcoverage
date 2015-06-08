@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-05-29</td>
+            <td class="headerValue">2015-06-08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">2</td>
@@ -88,17 +88,17 @@
 <span class="lineNum">      17 </span>                :            : 
 <a name="18"><span class="lineNum">      18 </span>                :            : #include &quot;time_utils.h&quot;</a>
 <span class="lineNum">      19 </span>                :            : 
-<span class="lineNum">      20 </span>                :<span class="lineCov">    9989685 : struct timeval _utime_gap(struct timeval a, struct timeval b)</span>
+<span class="lineNum">      20 </span>                :<span class="lineCov">    9935704 : struct timeval _utime_gap(struct timeval a, struct timeval b)</span>
 <span class="lineNum">      21 </span>                :            : {
 <span class="lineNum">      22 </span>                :            :     struct timeval ret;
-<span class="lineNum">      23 </span>        [<span class="branchCov" title="Branch 0 was taken 6629983 times"> + </span><span class="branchCov" title="Branch 1 was taken 3359702 times"> + </span>]:<span class="lineCov">    9989685 :     if (b.tv_usec &gt;= a.tv_usec) {</span>
-<span class="lineNum">      24 </span>                :<span class="lineCov">    6629983 :         ret.tv_usec = b.tv_usec - a.tv_usec;</span>
-<span class="lineNum">      25 </span>                :<span class="lineCov">    6629983 :         ret.tv_sec = b.tv_sec - a.tv_sec;</span>
+<span class="lineNum">      23 </span>        [<span class="branchCov" title="Branch 0 was taken 4045650 times"> + </span><span class="branchCov" title="Branch 1 was taken 5890054 times"> + </span>]:<span class="lineCov">    9935704 :     if (b.tv_usec &gt;= a.tv_usec) {</span>
+<span class="lineNum">      24 </span>                :<span class="lineCov">    4045650 :         ret.tv_usec = b.tv_usec - a.tv_usec;</span>
+<span class="lineNum">      25 </span>                :<span class="lineCov">    4045650 :         ret.tv_sec = b.tv_sec - a.tv_sec;</span>
 <span class="lineNum">      26 </span>                :            :     }else{
-<span class="lineNum">      27 </span>                :<span class="lineCov">    3359702 :         ret.tv_usec = 1000000 + b.tv_usec - a.tv_usec;</span>
-<span class="lineNum">      28 </span>                :<span class="lineCov">    3359702 :         ret.tv_sec = b.tv_sec - a.tv_sec - 1;</span>
+<span class="lineNum">      27 </span>                :<span class="lineCov">    5890054 :         ret.tv_usec = 1000000 + b.tv_usec - a.tv_usec;</span>
+<span class="lineNum">      28 </span>                :<span class="lineCov">    5890054 :         ret.tv_sec = b.tv_sec - a.tv_sec - 1;</span>
 <span class="lineNum">      29 </span>                :            :     }
-<span class="lineNum">      30 </span>                :<span class="lineCov">    9989685 :     return ret;</span>
+<span class="lineNum">      30 </span>                :<span class="lineCov">    9935704 :     return ret;</span>
 <span class="lineNum">      31 </span>                :            : }
 <span class="lineNum">      32 </span>                :            : 
 <span class="lineNum">      33 </span>                :            : #if defined(WIN32) || defined(_WIN32)

@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-05-29</td>
+            <td class="headerValue">2015-06-08</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">7</td>
@@ -265,9 +265,9 @@
 <span class="lineNum">     194 </span>                :            : fdb_seqnum_t filemgr_get_seqnum(struct filemgr *file);
 <a name="195"><span class="lineNum">     195 </span>                :            : void filemgr_set_seqnum(struct filemgr *file, fdb_seqnum_t seqnum);</a>
 <span class="lineNum">     196 </span>                :            : 
-<span class="lineNum">     197 </span>                :<span class="lineCov">     974188 : INLINE bid_t filemgr_get_header_bid(struct filemgr *file)</span>
+<span class="lineNum">     197 </span>                :<span class="lineCov">     973728 : INLINE bid_t filemgr_get_header_bid(struct filemgr *file)</span>
 <span class="lineNum">     198 </span>                :            : {
-<span class="lineNum">     199 </span>        [<span class="branchCov" title="Branch 0 was taken 972741 times"> + </span><span class="branchCov" title="Branch 1 was taken 1447 times"> + </span>]:<span class="lineCov">     974188 :     return ((file-&gt;header.size &gt; 0) ? file-&gt;header.bid.val : BLK_NOT_FOUND);</span>
+<span class="lineNum">     199 </span>        [<span class="branchCov" title="Branch 0 was taken 972280 times"> + </span><span class="branchCov" title="Branch 1 was taken 1448 times"> + </span>]:<span class="lineCov">     973728 :     return ((file-&gt;header.size &gt; 0) ? file-&gt;header.bid.val : BLK_NOT_FOUND);</span>
 <span class="lineNum">     200 </span>                :            : }
 <span class="lineNum">     201 </span>                :            : bid_t _filemgr_get_header_bid(struct filemgr *file);
 <span class="lineNum">     202 </span>                :            : void* filemgr_get_header(struct filemgr *file, void *buf, size_t *len);
@@ -282,9 +282,9 @@
 <span class="lineNum">     211 </span>                :            :                          const char *orig_file_name,
 <a name="212"><span class="lineNum">     212 </span>                :            :                          err_log_callback *log_callback);</a>
 <span class="lineNum">     213 </span>                :            : 
-<span class="lineNum">     214 </span>                :<span class="lineCov">      16962 : INLINE bid_t filemgr_get_next_alloc_block(struct filemgr *file)</span>
+<span class="lineNum">     214 </span>                :<span class="lineCov">      18699 : INLINE bid_t filemgr_get_next_alloc_block(struct filemgr *file)</span>
 <span class="lineNum">     215 </span>                :            : {
-<span class="lineNum">     216 </span>                :<span class="lineCov">      16962 :     return file-&gt;pos.val / file-&gt;blocksize;</span>
+<span class="lineNum">     216 </span>                :<span class="lineCov">      18699 :     return file-&gt;pos.val / file-&gt;blocksize;</span>
 <span class="lineNum">     217 </span>                :            : }
 <span class="lineNum">     218 </span>                :            : bid_t filemgr_alloc(struct filemgr *file, err_log_callback *log_callback);
 <span class="lineNum">     219 </span>                :            : void filemgr_alloc_multiple(struct filemgr *file, int nblock, bid_t *begin,
@@ -304,15 +304,15 @@
 <span class="lineNum">     233 </span>                :            :                           uint64_t len, void *buf, err_log_callback *log_callback);
 <a name="234"><span class="lineNum">     234 </span>                :            : fdb_status filemgr_write(struct filemgr *file, bid_t bid, void *buf,</a>
 <span class="lineNum">     235 </span>                :            :                    err_log_callback *log_callback);
-<span class="lineNum">     236 </span>                :<span class="lineCov">   47787688 : INLINE int filemgr_is_writable(struct filemgr *file, bid_t bid)</span>
+<span class="lineNum">     236 </span>                :<span class="lineCov">   52411098 : INLINE int filemgr_is_writable(struct filemgr *file, bid_t bid)</span>
 <span class="lineNum">     237 </span>                :            : {
-<span class="lineNum">     238 </span>                :<span class="lineCov">   47787688 :     uint64_t pos = bid * file-&gt;blocksize;</span>
+<span class="lineNum">     238 </span>                :<span class="lineCov">   52411098 :     uint64_t pos = bid * file-&gt;blocksize;</span>
 <span class="lineNum">     239 </span>                :            :     // Note that we don't need to grab file-&gt;lock here because
 <span class="lineNum">     240 </span>                :            :     // 1) both file-&gt;pos and file-&gt;last_commit are only incremented.
 <span class="lineNum">     241 </span>                :            :     // 2) file-&gt;last_commit is updated using the value of file-&gt;pos,
 <span class="lineNum">     242 </span>                :            :     //    and always equal to or smaller than file-&gt;pos.
-<span class="lineNum">     243 </span>[<span class="branchCov" title="Branch 0 was taken 47771643 times"> + </span><span class="branchCov" title="Branch 1 was taken 16444 times"> + </span>][<span class="branchCov" title="Branch 2 was taken 28992515 times"> + </span><span class="branchCov" title="Branch 3 was taken 18779128 times"> + </span>]:<span class="lineCov">   47787688 :     return (pos &lt;  file-&gt;pos.val &amp;&amp;</span>
-<span class="lineNum">     244 </span>                :<span class="lineCov">   47787688 :             pos &gt;= file-&gt;last_commit.val);</span>
+<span class="lineNum">     243 </span>[<span class="branchCov" title="Branch 0 was taken 52403984 times"> + </span><span class="branchCov" title="Branch 1 was taken 7343 times"> + </span>][<span class="branchCov" title="Branch 2 was taken 29381049 times"> + </span><span class="branchCov" title="Branch 3 was taken 23022935 times"> + </span>]:<span class="lineCov">   52411098 :     return (pos &lt;  file-&gt;pos.val &amp;&amp;</span>
+<span class="lineNum">     244 </span>                :<span class="lineCov">   52411098 :             pos &gt;= file-&gt;last_commit.val);</span>
 <span class="lineNum">     245 </span>                :            : }
 <span class="lineNum">     246 </span>                :            : void filemgr_remove_file(struct filemgr *file);
 <span class="lineNum">     247 </span>                :            : 
@@ -321,7 +321,7 @@
 <span class="lineNum">     250 </span>                :            : fdb_status filemgr_sync(struct filemgr *file,
 <span class="lineNum">     251 </span>                :            :                         err_log_callback *log_callback);
 <span class="lineNum">     252 </span>                :            : 
-<span class="lineNum">     253 </span>                :            : void filemgr_shutdown();
+<span class="lineNum">     253 </span>                :            : fdb_status filemgr_shutdown();
 <span class="lineNum">     254 </span>                :            : int filemgr_update_file_status(struct filemgr *file, file_status_t status,
 <span class="lineNum">     255 </span>                :            :                                 char *old_filename);
 <span class="lineNum">     256 </span>                :            : void filemgr_set_compaction_state(struct filemgr *old_file,
@@ -342,13 +342,13 @@
 <span class="lineNum">     271 </span>                :            : char *filemgr_redirect_old_file(struct filemgr *very_old_file,
 <a name="272"><span class="lineNum">     272 </span>                :            :                                 struct filemgr *new_file,</a>
 <span class="lineNum">     273 </span>                :            :                                 filemgr_redirect_hdr_func redirect_func);
-<span class="lineNum">     274 </span>                :<span class="lineCov">   12679248 : INLINE file_status_t filemgr_get_file_status(struct filemgr *file)</span>
+<span class="lineNum">     274 </span>                :<span class="lineCov">   12846840 : INLINE file_status_t filemgr_get_file_status(struct filemgr *file)</span>
 <span class="lineNum">     275 </span>                :            : {
-<a name="276"><span class="lineNum">     276 </span>                :<span class="lineCov">   12679248 :     return file-&gt;status.val;</span></a>
+<a name="276"><span class="lineNum">     276 </span>                :<span class="lineCov">   12846840 :     return file-&gt;status.val;</span></a>
 <span class="lineNum">     277 </span>                :            : }
-<span class="lineNum">     278 </span>                :<span class="lineCov">   32986780 : INLINE uint64_t filemgr_get_pos(struct filemgr *file)</span>
+<span class="lineNum">     278 </span>                :<span class="lineCov">   35088258 : INLINE uint64_t filemgr_get_pos(struct filemgr *file)</span>
 <span class="lineNum">     279 </span>                :            : {
-<span class="lineNum">     280 </span>                :<span class="lineCov">   32986780 :     return file-&gt;pos.val;</span>
+<span class="lineNum">     280 </span>                :<span class="lineCov">   35088258 :     return file-&gt;pos.val;</span>
 <span class="lineNum">     281 </span>                :            : }
 <span class="lineNum">     282 </span>                :            : 
 <span class="lineNum">     283 </span>                :            : bool filemgr_is_rollback_on(struct filemgr *file);
@@ -368,18 +368,18 @@
 <span class="lineNum">     297 </span>                :            : void filemgr_set_dirty_root(struct filemgr *file,
 <a name="298"><span class="lineNum">     298 </span>                :            :                             bid_t dirty_idtree_root,</a>
 <span class="lineNum">     299 </span>                :            :                             bid_t dirty_seqtree_root);
-<span class="lineNum">     300 </span>                :<span class="lineCov">    3532983 : INLINE void filemgr_get_dirty_root(struct filemgr *file,</span>
+<span class="lineNum">     300 </span>                :<span class="lineCov">    3536457 : INLINE void filemgr_get_dirty_root(struct filemgr *file,</span>
 <span class="lineNum">     301 </span>                :            :                                    bid_t *dirty_idtree_root,
 <span class="lineNum">     302 </span>                :            :                                    bid_t *dirty_seqtree_root)
 <span class="lineNum">     303 </span>                :            : {
-<span class="lineNum">     304 </span>                :<span class="lineCov">    3532983 :     *dirty_idtree_root = file-&gt;header.dirty_idtree_root.val;</span>
-<span class="lineNum">     305 </span>                :<span class="lineCov">    3532983 :     *dirty_seqtree_root = file-&gt;header.dirty_seqtree_root.val;</span>
-<a name="306"><span class="lineNum">     306 </span>                :<span class="lineCov">    3532983 : }</span></a>
+<span class="lineNum">     304 </span>                :<span class="lineCov">    3536457 :     *dirty_idtree_root = file-&gt;header.dirty_idtree_root.val;</span>
+<span class="lineNum">     305 </span>                :<span class="lineCov">    3536457 :     *dirty_seqtree_root = file-&gt;header.dirty_seqtree_root.val;</span>
+<a name="306"><span class="lineNum">     306 </span>                :<span class="lineCov">    3536457 : }</span></a>
 <span class="lineNum">     307 </span>                :            : 
-<span class="lineNum">     308 </span>                :<span class="lineCov">    3222635 : INLINE bool filemgr_dirty_root_exist(struct filemgr *file)</span>
+<span class="lineNum">     308 </span>                :<span class="lineCov">    3387350 : INLINE bool filemgr_dirty_root_exist(struct filemgr *file)</span>
 <span class="lineNum">     309 </span>                :            : {
-<span class="lineNum">     310 </span>[<span class="branchCov" title="Branch 0 was taken 3222149 times"> + </span><span class="branchCov" title="Branch 1 was taken 486 times"> + </span>][<span class="branchCov" title="Branch 2 was taken 1 time"> + </span><span class="branchCov" title="Branch 3 was taken 3222337 times"> + </span>]:<span class="lineCov">    3222635 :     return (file-&gt;header.dirty_idtree_root.val  != BLK_NOT_FOUND ||</span>
-<span class="lineNum">     311 </span>                :<span class="lineCov">    3222635 :             file-&gt;header.dirty_seqtree_root.val != BLK_NOT_FOUND);</span>
+<span class="lineNum">     310 </span>[<span class="branchCov" title="Branch 0 was taken 3386792 times"> + </span><span class="branchCov" title="Branch 1 was taken 558 times"> + </span>][<span class="branchCov" title="Branch 2 was taken 116 times"> + </span><span class="branchCov" title="Branch 3 was taken 3386731 times"> + </span>]:<span class="lineCov">    3387350 :     return (file-&gt;header.dirty_idtree_root.val  != BLK_NOT_FOUND ||</span>
+<span class="lineNum">     311 </span>                :<span class="lineCov">    3387350 :             file-&gt;header.dirty_seqtree_root.val != BLK_NOT_FOUND);</span>
 <span class="lineNum">     312 </span>                :            : }
 <span class="lineNum">     313 </span>                :            : 
 <span class="lineNum">     314 </span>                :            : bool filemgr_is_commit_header(void *head_buffer, size_t blocksize);
