@@ -19,7 +19,7 @@
         <table cellpadding=1 border=0 width="100%">
           <tr>
             <td width="10%" class="headerItem">Current view:</td>
-            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">src</a> - filemgr_ops_linux.cc<span style="font-size: 80%;"> (source / <a href="filemgr_ops_linux.cc.func-sort-c.html">functions</a>)</span></td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">src</a> - filemgr_ops_linux.cc<span style="font-size: 80%;"> (source / <a href="filemgr_ops_linux.cc.func.html">functions</a>)</span></td>
             <td width="5%"></td>
             <td width="15%"></td>
             <td width="10%" class="headerCovTableHead">Hit</td>
@@ -32,17 +32,17 @@
             <td></td>
             <td class="headerItem">Lines:</td>
             <td class="headerCovTableEntry">43</td>
-            <td class="headerCovTableEntry">87</td>
-            <td class="headerCovTableEntryLo">49.4 %</td>
+            <td class="headerCovTableEntry">52</td>
+            <td class="headerCovTableEntryMed">82.7 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-10-20 12:13:03</td>
+            <td class="headerValue">2015-12-03</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">9</td>
-            <td class="headerCovTableEntry">16</td>
-            <td class="headerCovTableEntryLo">56.2 %</td>
+            <td class="headerCovTableEntry">13</td>
+            <td class="headerCovTableEntryLo">69.2 %</td>
           </tr>
           <tr>
             <td></td>
@@ -50,8 +50,8 @@
             <td></td>
             <td class="headerItem">Branches:</td>
             <td class="headerCovTableEntry">17</td>
-            <td class="headerCovTableEntry">43</td>
-            <td class="headerCovTableEntryLo">39.5 %</td>
+            <td class="headerCovTableEntry">30</td>
+            <td class="headerCovTableEntryLo">56.7 %</td>
           </tr>
           <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
         </table>
@@ -100,72 +100,72 @@
 <span class="lineNum">      29 </span>                :            : 
 <a name="30"><span class="lineNum">      30 </span>                :            : #if !defined(WIN32) &amp;&amp; !defined(_WIN32)</a>
 <span class="lineNum">      31 </span>                :            : 
-<span class="lineNum">      32 </span>                :<span class="lineCov">       2018 : int _filemgr_linux_open(const char *pathname, int flags, mode_t mode)</span>
+<span class="lineNum">      32 </span>                :<span class="lineCov">       1723 : int _filemgr_linux_open(const char *pathname, int flags, mode_t mode)</span>
 <span class="lineNum">      33 </span>                :            : {
 <span class="lineNum">      34 </span>                :            :     int fd;
-<span class="lineNum">      35 </span>        [<span class="branchCov" title="Branch 0 was taken 1080 times"> + </span><span class="branchCov" title="Branch 1 was taken 940 times"> + </span>]:<span class="lineCov">       2020 :     do {</span>
-<span class="lineNum">      36 </span>                :<span class="lineCov">       2018 :         fd = open(pathname, flags | O_LARGEFILE, mode);</span>
-<span class="lineNum">      37 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 1079 times"> + </span>]:<span class="lineCov">       1080 :     } while (fd == -1 &amp;&amp; errno == EINTR);</span>
+<span class="lineNum">      35 </span>        [<span class="branchCov" title="Branch 0 was taken 944 times"> + </span><span class="branchCov" title="Branch 1 was taken 780 times"> + </span>]:<span class="lineCov">       1724 :     do {</span>
+<span class="lineNum">      36 </span>                :<span class="lineCov">       1723 :         fd = open(pathname, flags | O_LARGEFILE, mode);</span>
+<span class="lineNum">      37 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 944 times"> + </span>]:<span class="lineCov">        944 :     } while (fd == -1 &amp;&amp; errno == EINTR);</span>
 <span class="lineNum">      38 </span>                :            : 
-<span class="lineNum">      39 </span>        [<span class="branchCov" title="Branch 0 was taken 1079 times"> + </span><span class="branchCov" title="Branch 1 was taken 940 times"> + </span>]:<span class="lineCov">       2019 :     if (fd &lt; 0) {</span>
-<span class="lineNum">      40 </span>        [<span class="branchCov" title="Branch 1 was taken 1078 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">       1079 :         if (errno == ENOENT) {</span>
-<span class="lineNum">      41 </span>                :<span class="lineCov">       1078 :             return (int) FDB_RESULT_NO_SUCH_FILE;</span>
+<span class="lineNum">      39 </span>        [<span class="branchCov" title="Branch 0 was taken 944 times"> + </span><span class="branchCov" title="Branch 1 was taken 780 times"> + </span>]:<span class="lineCov">       1724 :     if (fd &lt; 0) {</span>
+<span class="lineNum">      40 </span>        [<span class="branchCov" title="Branch 1 was taken 944 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        944 :         if (errno == ENOENT) {</span>
+<span class="lineNum">      41 </span>                :<span class="lineCov">        944 :             return (int) FDB_RESULT_NO_SUCH_FILE;</span>
 <span class="lineNum">      42 </span>                :            :         } else {
 <span class="lineNum">      43 </span>                :            :             return (int) FDB_RESULT_OPEN_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">      44 </span>                :            :         }
 <span class="lineNum">      45 </span>                :            :     }
-<span class="lineNum">      46 </span>                :<span class="lineCov">        940 :     return fd;</span>
+<span class="lineNum">      46 </span>                :<span class="lineCov">        780 :     return fd;</span>
 <a name="47"><span class="lineNum">      47 </span>                :            : }</a>
 <span class="lineNum">      48 </span>                :            : 
-<span class="lineNum">      49 </span>                :<span class="lineCov">    2162739 : ssize_t _filemgr_linux_pwrite(int fd, void *buf, size_t count, cs_off_t offset)</span>
+<span class="lineNum">      49 </span>                :<span class="lineCov">    2230814 : ssize_t _filemgr_linux_pwrite(int fd, void *buf, size_t count, cs_off_t offset)</span>
 <span class="lineNum">      50 </span>                :            : {
 <span class="lineNum">      51 </span>                :            :     ssize_t rv;
-<span class="lineNum">      52 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2162983 times"> + </span>]:<span class="lineCov">    2162983 :     do {</span>
-<span class="lineNum">      53 </span>                :<span class="lineCov">    2162752 :         rv = pwrite(fd, buf, count, offset);</span>
+<span class="lineNum">      52 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2231232 times"> + </span>]:<span class="lineCov">    2231232 :     do {</span>
+<span class="lineNum">      53 </span>                :<span class="lineCov">    2230811 :         rv = pwrite(fd, buf, count, offset);</span>
 <span class="lineNum">      54 </span>                :            :     } while (rv == -1 &amp;&amp; errno == EINTR); // LCOV_EXCL_LINE
 <span class="lineNum">      55 </span>                :            : 
-<span class="lineNum">      56 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2162970 times"> + </span>]:<span class="lineCov">    2162970 :     if (rv &lt; 0) {</span>
+<span class="lineNum">      56 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 2231235 times"> + </span>]:<span class="lineCov">    2231235 :     if (rv &lt; 0) {</span>
 <span class="lineNum">      57 </span>                :            :         return (ssize_t) FDB_RESULT_WRITE_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">      58 </span>                :            :     }
-<span class="lineNum">      59 </span>                :<span class="lineCov">    2162970 :     return rv;</span>
+<span class="lineNum">      59 </span>                :<span class="lineCov">    2231235 :     return rv;</span>
 <a name="60"><span class="lineNum">      60 </span>                :            : }</a>
 <span class="lineNum">      61 </span>                :            : 
-<span class="lineNum">      62 </span>                :<span class="lineCov">    4173192 : ssize_t _filemgr_linux_pread(int fd, void *buf, size_t count, cs_off_t offset)</span>
+<span class="lineNum">      62 </span>                :<span class="lineCov">    4179179 : ssize_t _filemgr_linux_pread(int fd, void *buf, size_t count, cs_off_t offset)</span>
 <span class="lineNum">      63 </span>                :            : {
 <span class="lineNum">      64 </span>                :            :     ssize_t rv;
-<span class="lineNum">      65 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 3684577 times"> + </span>]:<span class="lineCov">    3684577 :     do {</span>
-<span class="lineNum">      66 </span>                :<span class="lineCov">    3756124 :         rv = pread(fd, buf, count, offset);</span>
+<span class="lineNum">      65 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 4214757 times"> + </span>]:<span class="lineCov">    4214757 :     do {</span>
+<span class="lineNum">      66 </span>                :<span class="lineCov">    3797170 :         rv = pread(fd, buf, count, offset);</span>
 <span class="lineNum">      67 </span>                :            :     } while (rv == -1 &amp;&amp; errno == EINTR); // LCOV_EXCL_LINE
 <span class="lineNum">      68 </span>                :            : 
-<span class="lineNum">      69 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 4101645 times"> + </span>]:<span class="lineCov">    4101645 :     if (rv &lt; 0) {</span>
+<span class="lineNum">      69 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 4596766 times"> + </span>]:<span class="lineCov">    4596766 :     if (rv &lt; 0) {</span>
 <span class="lineNum">      70 </span>                :            :         return (ssize_t) FDB_RESULT_READ_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">      71 </span>                :            :     }
-<span class="lineNum">      72 </span>                :<span class="lineCov">    4101645 :     return rv;</span>
+<span class="lineNum">      72 </span>                :<span class="lineCov">    4596766 :     return rv;</span>
 <a name="73"><span class="lineNum">      73 </span>                :            : }</a>
 <span class="lineNum">      74 </span>                :            : 
-<span class="lineNum">      75 </span>                :<span class="lineCov">        935 : int _filemgr_linux_close(int fd)</span>
+<span class="lineNum">      75 </span>                :<span class="lineCov">        778 : int _filemgr_linux_close(int fd)</span>
 <span class="lineNum">      76 </span>                :            : {
-<span class="lineNum">      77 </span>                :<span class="lineCov">        935 :     int rv = 0;</span>
-<span class="lineNum">      78 </span>        [<span class="branchCov" title="Branch 0 was taken 935 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        935 :     if (fd != -1) {</span>
-<span class="lineNum">      79 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 937 times"> + </span>]:<span class="lineCov">        937 :         do {</span>
-<span class="lineNum">      80 </span>                :<span class="lineCov">        935 :             rv = close(fd);</span>
+<span class="lineNum">      77 </span>                :<span class="lineCov">        778 :     int rv = 0;</span>
+<span class="lineNum">      78 </span>        [<span class="branchCov" title="Branch 0 was taken 778 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        778 :     if (fd != -1) {</span>
+<span class="lineNum">      79 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 779 times"> + </span>]:<span class="lineCov">        779 :         do {</span>
+<span class="lineNum">      80 </span>                :<span class="lineCov">        778 :             rv = close(fd);</span>
 <span class="lineNum">      81 </span>                :            :         } while (rv == -1 &amp;&amp; errno == EINTR); // LCOV_EXCL_LINE
 <span class="lineNum">      82 </span>                :            :     }
 <span class="lineNum">      83 </span>                :            : 
-<span class="lineNum">      84 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 937 times"> + </span>]:<span class="lineCov">        937 :     if (rv &lt; 0) {</span>
+<span class="lineNum">      84 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 779 times"> + </span>]:<span class="lineCov">        779 :     if (rv &lt; 0) {</span>
 <span class="lineNum">      85 </span>                :            :         return FDB_RESULT_CLOSE_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">      86 </span>                :            :     }
 <span class="lineNum">      87 </span>                :            : 
-<span class="lineNum">      88 </span>                :<span class="lineCov">        937 :     return FDB_RESULT_SUCCESS;</span>
+<span class="lineNum">      88 </span>                :<span class="lineCov">        779 :     return FDB_RESULT_SUCCESS;</span>
 <a name="89"><span class="lineNum">      89 </span>                :            : }</a>
 <span class="lineNum">      90 </span>                :            : 
-<span class="lineNum">      91 </span>                :<span class="lineCov">     534059 : cs_off_t _filemgr_linux_goto_eof(int fd)</span>
+<span class="lineNum">      91 </span>                :<span class="lineCov">     364244 : cs_off_t _filemgr_linux_goto_eof(int fd)</span>
 <span class="lineNum">      92 </span>                :            : {
-<span class="lineNum">      93 </span>                :<span class="lineCov">     534059 :     cs_off_t rv = lseek(fd, 0, SEEK_END);</span>
-<span class="lineNum">      94 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 534059 times"> + </span>]:<span class="lineCov">     534059 :     if (rv &lt; 0) {</span>
+<span class="lineNum">      93 </span>                :<span class="lineCov">     364244 :     cs_off_t rv = lseek(fd, 0, SEEK_END);</span>
+<span class="lineNum">      94 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 364245 times"> + </span>]:<span class="lineCov">     364245 :     if (rv &lt; 0) {</span>
 <span class="lineNum">      95 </span>                :            :         return (cs_off_t) FDB_RESULT_SEEK_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">      96 </span>                :            :     }
-<span class="lineNum">      97 </span>                :<span class="lineCov">     534059 :     return rv;</span>
+<span class="lineNum">      97 </span>                :<span class="lineCov">     364245 :     return rv;</span>
 <span class="lineNum">      98 </span>                :            : }
 <span class="lineNum">      99 </span>                :            : 
 <span class="lineNum">     100 </span>                :            : // LCOV_EXCL_START
@@ -179,18 +179,18 @@
 <span class="lineNum">     108 </span>                :            : }
 <a name="109"><span class="lineNum">     109 </span>                :            : // LCOV_EXCL_STOP</a>
 <span class="lineNum">     110 </span>                :            : 
-<span class="lineNum">     111 </span>                :<span class="lineCov">      52836 : int _filemgr_linux_fsync(int fd)</span>
+<span class="lineNum">     111 </span>                :<span class="lineCov">      69008 : int _filemgr_linux_fsync(int fd)</span>
 <span class="lineNum">     112 </span>                :            : {
 <span class="lineNum">     113 </span>                :            :     int rv;
-<span class="lineNum">     114 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 52836 times"> + </span>]:<span class="lineCov">      52836 :     do {</span>
-<span class="lineNum">     115 </span>                :<span class="lineCov">      52836 :         rv = fsync(fd);</span>
+<span class="lineNum">     114 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 69008 times"> + </span>]:<span class="lineCov">      69008 :     do {</span>
+<span class="lineNum">     115 </span>                :<span class="lineCov">      69008 :         rv = fsync(fd);</span>
 <span class="lineNum">     116 </span>                :            :     } while (rv == -1 &amp;&amp; errno == EINTR); // LCOV_EXCL_LINE
 <span class="lineNum">     117 </span>                :            : 
-<span class="lineNum">     118 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 52836 times"> + </span>]:<span class="lineCov">      52836 :     if (rv == -1) {</span>
+<span class="lineNum">     118 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 69008 times"> + </span>]:<span class="lineCov">      69008 :     if (rv == -1) {</span>
 <span class="lineNum">     119 </span>                :            :         return FDB_RESULT_FSYNC_FAIL; // LCOV_EXCL_LINE
 <span class="lineNum">     120 </span>                :            :     }
 <span class="lineNum">     121 </span>                :            : 
-<span class="lineNum">     122 </span>                :<span class="lineCov">      52836 :     return FDB_RESULT_SUCCESS;</span>
+<span class="lineNum">     122 </span>                :<span class="lineCov">      69008 :     return FDB_RESULT_SUCCESS;</span>
 <span class="lineNum">     123 </span>                :            : }
 <span class="lineNum">     124 </span>                :            : 
 <span class="lineNum">     125 </span>                :            : // LCOV_EXCL_START
@@ -213,14 +213,14 @@
 <span class="lineNum">     142 </span>                :            : }
 <a name="143"><span class="lineNum">     143 </span>                :            : // LCOV_EXCL_STOP</a>
 <span class="lineNum">     144 </span>                :            : 
-<span class="lineNum">     145 </span>                :<span class="lineCov">       8580 : void _filemgr_linux_get_errno_str(char *buf, size_t size) {</span>
-<span class="lineNum">     146 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 8580 times"> + </span>]:<span class="lineCov">       8580 :     if (!buf) {</span>
+<span class="lineNum">     145 </span>                :<span class="lineCov">       8609 : void _filemgr_linux_get_errno_str(char *buf, size_t size) {</span>
+<span class="lineNum">     146 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 8609 times"> + </span>]:<span class="lineCov">       8609 :     if (!buf) {</span>
 <span class="lineNum">     147 </span>                :<span class="lineNoCov">          0 :         return;</span>
 <span class="lineNum">     148 </span>                :            :     } else {
-<span class="lineNum">     149 </span>                :<span class="lineCov">       8580 :         char *tbuf = alca(char, size);</span>
+<span class="lineNum">     149 </span>                :<span class="lineCov">       8609 :         char *tbuf = alca(char, size);</span>
 <span class="lineNum">     150 </span>                :            : #ifdef _POSIX_SOURCE
-<span class="lineNum">     151 </span>                :<span class="lineCov">       8580 :         char *ret = strerror_r(errno, tbuf, size);</span>
-<span class="lineNum">     152 </span>                :<span class="lineCov">       8580 :         snprintf(buf, size, &quot;errno = %d: '%s'&quot;, errno, ret);</span>
+<span class="lineNum">     151 </span>                :<span class="lineCov">       8609 :         char *ret = strerror_r(errno, tbuf, size);</span>
+<span class="lineNum">     152 </span>                :<span class="lineCov">       8609 :         snprintf(buf, size, &quot;errno = %d: '%s'&quot;, errno, ret);</span>
 <span class="lineNum">     153 </span>                :            : #else
 <span class="lineNum">     154 </span>                :            :         (void)strerror_r(errno, tbuf, size);
 <span class="lineNum">     155 </span>                :            :         snprintf(buf, size, &quot;errno = %d: '%s'&quot;, errno, tbuf);
@@ -228,7 +228,7 @@
 <span class="lineNum">     157 </span>                :            :     }
 <a name="158"><span class="lineNum">     158 </span>                :            : }</a>
 <span class="lineNum">     159 </span>                :            : 
-<span class="lineNum">     160 </span>                :<span class="lineCov">        171 : int _filemgr_aio_init(struct async_io_handle *aio_handle)</span>
+<span class="lineNum">     160 </span>                :<span class="lineCov">        143 : int _filemgr_aio_init(struct async_io_handle *aio_handle)</span>
 <span class="lineNum">     161 </span>                :            : {
 <span class="lineNum">     162 </span>                :            : #ifdef _ASYNC_IO
 <span class="lineNum">     163 </span>                :            :     if (!aio_handle) {
@@ -264,7 +264,7 @@
 <span class="lineNum">     193 </span>                :            :     }
 <span class="lineNum">     194 </span>                :            :     return FDB_RESULT_SUCCESS;
 <span class="lineNum">     195 </span>                :            : #else
-<span class="lineNum">     196 </span>                :<span class="lineCov">        171 :     return FDB_RESULT_AIO_NOT_SUPPORTED;</span>
+<span class="lineNum">     196 </span>                :<span class="lineCov">        143 :     return FDB_RESULT_AIO_NOT_SUPPORTED;</span>
 <span class="lineNum">     197 </span>                :            : #endif
 <a name="198"><span class="lineNum">     198 </span>                :            : }</a>
 <span class="lineNum">     199 </span>                :            : 
@@ -356,187 +356,30 @@
 <span class="lineNum">     285 </span>                :            : #endif
 <span class="lineNum">     286 </span>                :            : }
 <span class="lineNum">     287 </span>                :            : 
-<span class="lineNum">     288 </span>                :            : #if defined(__APPLE__) || defined(__FreeBSD__)
-<span class="lineNum">     289 </span>                :            : #include &lt;sys/mount.h&gt;
-<span class="lineNum">     290 </span>                :            : #elif !defined(__sun)
-<span class="lineNum">     291 </span>                :            : #include &lt;sys/vfs.h&gt;
-<span class="lineNum">     292 </span>                :            : #endif
-<span class="lineNum">     293 </span>                :            : 
-<span class="lineNum">     294 </span>                :            : #ifndef BTRFS_SUPER_MAGIC
-<span class="lineNum">     295 </span>                :            : #define BTRFS_SUPER_MAGIC 0x9123683E
-<span class="lineNum">     296 </span>                :            : #endif
-<span class="lineNum">     297 </span>                :            : 
-<span class="lineNum">     298 </span>                :            : #ifdef HAVE_BTRFS_IOCTL_H
-<span class="lineNum">     299 </span>                :            : #include &lt;btrfs/ioctl.h&gt;
-<span class="lineNum">     300 </span>                :            : #else
-<span class="lineNum">     301 </span>                :            : #include &lt;sys/ioctl.h&gt;
-<span class="lineNum">     302 </span>                :            : #ifndef BTRFS_IOCTL_MAGIC
-<span class="lineNum">     303 </span>                :            : #define BTRFS_IOCTL_MAGIC 0x94
-<span class="lineNum">     304 </span>                :            : #endif //BTRFS_IOCTL_MAGIC
+<span class="lineNum">     288 </span>                :            : struct filemgr_ops linux_ops = {
+<span class="lineNum">     289 </span>                :            :     _filemgr_linux_open,
+<span class="lineNum">     290 </span>                :            :     _filemgr_linux_pwrite,
+<span class="lineNum">     291 </span>                :            :     _filemgr_linux_pread,
+<span class="lineNum">     292 </span>                :            :     _filemgr_linux_close,
+<span class="lineNum">     293 </span>                :            :     _filemgr_linux_goto_eof,
+<span class="lineNum">     294 </span>                :            :     _filemgr_linux_file_size,
+<span class="lineNum">     295 </span>                :            :     _filemgr_linux_fdatasync,
+<span class="lineNum">     296 </span>                :            :     _filemgr_linux_fsync,
+<span class="lineNum">     297 </span>                :            :     _filemgr_linux_get_errno_str,
+<span class="lineNum">     298 </span>                :            :     // Async I/O operations
+<span class="lineNum">     299 </span>                :            :     _filemgr_aio_init,
+<span class="lineNum">     300 </span>                :            :     _filemgr_aio_prep_read,
+<span class="lineNum">     301 </span>                :            :     _filemgr_aio_submit,
+<span class="lineNum">     302 </span>                :            :     _filemgr_aio_getevents,
+<span class="lineNum">     303 </span>                :            :     _filemgr_aio_destroy
+<a name="304"><span class="lineNum">     304 </span>                :            : };</a>
 <span class="lineNum">     305 </span>                :            : 
-<span class="lineNum">     306 </span>                :            : struct btrfs_ioctl_clone_range_args {
-<span class="lineNum">     307 </span>                :            :     int64_t src_fd;
-<span class="lineNum">     308 </span>                :            :     uint64_t src_offset;
-<span class="lineNum">     309 </span>                :            :     uint64_t src_length;
-<span class="lineNum">     310 </span>                :            :     uint64_t dest_offset;
-<span class="lineNum">     311 </span>                :            : };
-<span class="lineNum">     312 </span>                :            : 
-<span class="lineNum">     313 </span>                :            : #define _IOC_NRBITS     8
-<span class="lineNum">     314 </span>                :            : #define _IOC_TYPEBITS   8
-<span class="lineNum">     315 </span>                :            : 
-<span class="lineNum">     316 </span>                :            : #ifndef _IOC_SIZEBITS
-<span class="lineNum">     317 </span>                :            : # define _IOC_SIZEBITS  14
-<span class="lineNum">     318 </span>                :            : #endif
-<span class="lineNum">     319 </span>                :            : 
-<span class="lineNum">     320 </span>                :            : #ifndef _IOC_DIRBITS
-<span class="lineNum">     321 </span>                :            : # define _IOC_DIRBITS   2
-<span class="lineNum">     322 </span>                :            : #endif
-<span class="lineNum">     323 </span>                :            : 
-<span class="lineNum">     324 </span>                :            : #define _IOC_NRSHIFT    0
-<span class="lineNum">     325 </span>                :            : #define _IOC_TYPESHIFT  (_IOC_NRSHIFT+_IOC_NRBITS)
-<span class="lineNum">     326 </span>                :            : #define _IOC_SIZESHIFT  (_IOC_TYPESHIFT+_IOC_TYPEBITS)
-<span class="lineNum">     327 </span>                :            : #define _IOC_DIRSHIFT   (_IOC_SIZESHIFT+_IOC_SIZEBITS)
-<span class="lineNum">     328 </span>                :            : 
-<span class="lineNum">     329 </span>                :            : #ifndef _IOC_WRITE
-<span class="lineNum">     330 </span>                :            : # define _IOC_WRITE     1U
-<span class="lineNum">     331 </span>                :            : #endif
-<span class="lineNum">     332 </span>                :            : 
-<span class="lineNum">     333 </span>                :            : #ifndef _IOC
-<span class="lineNum">     334 </span>                :            : #define _IOC(dir,type,nr,size) \
-<span class="lineNum">     335 </span>                :            :         (((dir)  &lt;&lt; _IOC_DIRSHIFT) | \
-<span class="lineNum">     336 </span>                :            :         ((type) &lt;&lt; _IOC_TYPESHIFT) | \
-<span class="lineNum">     337 </span>                :            :         ((nr)   &lt;&lt; _IOC_NRSHIFT) | \
-<span class="lineNum">     338 </span>                :            :         ((size) &lt;&lt; _IOC_SIZESHIFT))
-<span class="lineNum">     339 </span>                :            : #endif // _IOC
-<span class="lineNum">     340 </span>                :            : 
-<span class="lineNum">     341 </span>                :            : #define _IOC_TYPECHECK(t) (sizeof(t))
-<span class="lineNum">     342 </span>                :            : #ifndef _IOW
-<span class="lineNum">     343 </span>                :            : #define _IOW(type,nr,size) _IOC(_IOC_WRITE,(type),(nr),\
-<span class="lineNum">     344 </span>                :            :                           (_IOC_TYPECHECK(size)))
-<span class="lineNum">     345 </span>                :            : #endif //_IOW
-<span class="lineNum">     346 </span>                :            : 
-<span class="lineNum">     347 </span>                :            : #define BTRFS_IOC_CLONE_RANGE _IOW(BTRFS_IOCTL_MAGIC, 13, \
-<span class="lineNum">     348 </span>                :            :                               struct btrfs_ioctl_clone_range_args)
-<span class="lineNum">     349 </span>                :            : #endif // HAVE_BTRFS_IOCTL_H
-<span class="lineNum">     350 </span>                :            : 
-<span class="lineNum">     351 </span>                :            : #ifndef EXT4_SUPER_MAGIC
-<span class="lineNum">     352 </span>                :            : #define EXT4_SUPER_MAGIC 0xEF53
-<span class="lineNum">     353 </span>                :            : #endif
-<span class="lineNum">     354 </span>                :            : 
-<span class="lineNum">     355 </span>                :            : #ifndef EXT4_IOC_TRANFER_BLK_OWNERSHIP
-<span class="lineNum">     356 </span>                :            : /* linux/fs/ext4/ext4.h */
-<span class="lineNum">     357 </span>                :            : #define EXT4_IOC_TRANFER_BLK_OWNERSHIP  _IOWR('f', 22, struct tranfer_blk_ownership)
-<span class="lineNum">     358 </span>                :            : 
-<span class="lineNum">     359 </span>                :            : struct tranfer_blk_ownership {
-<span class="lineNum">     360 </span>                :            :     int32_t dest_fd;           /* destination file decriptor */
-<span class="lineNum">     361 </span>                :            :     uint64_t src_start;        /* logical start offset in block for src */
-<span class="lineNum">     362 </span>                :            :     uint64_t dest_start;       /* logical start offset in block for dest */
-<span class="lineNum">     363 </span>                :            :     uint64_t len;              /* block length to be onwership-transfered */
-<span class="lineNum">     364 </span>                :            : };
-<span class="lineNum">     365 </span>                :            : #endif // EXT4_IOC_TRANSFER_BLK_OWNERSHIP
-<span class="lineNum">     366 </span>                :            : 
-<a name="367"><span class="lineNum">     367 </span>                :            : #ifndef __sun</a>
-<span class="lineNum">     368 </span>                :            : static
-<span class="lineNum">     369 </span>                :<span class="lineNoCov">          0 : int _filemgr_linux_ext4_share_blks(int src_fd, int dst_fd, uint64_t src_off,</span>
-<span class="lineNum">     370 </span>                :            :                                    uint64_t dst_off, uint64_t len)
-<span class="lineNum">     371 </span>                :            : {
-<span class="lineNum">     372 </span>                :            :     int err;
-<span class="lineNum">     373 </span>                :            :     struct tranfer_blk_ownership tbo;
-<span class="lineNum">     374 </span>                :<span class="lineNoCov">          0 :     tbo.dest_fd = dst_fd;</span>
-<span class="lineNum">     375 </span>                :<span class="lineNoCov">          0 :     tbo.src_start = src_off;</span>
-<span class="lineNum">     376 </span>                :<span class="lineNoCov">          0 :     tbo.dest_start = dst_off;</span>
-<span class="lineNum">     377 </span>                :<span class="lineNoCov">          0 :     tbo.len = len;</span>
-<span class="lineNum">     378 </span>                :<span class="lineNoCov">          0 :     err = ioctl(src_fd, EXT4_IOC_TRANFER_BLK_OWNERSHIP, &amp;tbo);</span>
-<span class="lineNum">     379 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (err) {</span>
-<span class="lineNum">     380 </span>                :<span class="lineNoCov">          0 :         return errno;</span>
-<span class="lineNum">     381 </span>                :            :     }
-<span class="lineNum">     382 </span>                :<span class="lineNoCov">          0 :     return err;</span>
-<span class="lineNum">     383 </span>                :            : }
-<a name="384"><span class="lineNum">     384 </span>                :            : #endif</a>
-<span class="lineNum">     385 </span>                :            : 
-<span class="lineNum">     386 </span>                :<span class="lineNoCov">          0 : int _filemgr_linux_get_fs_type(int src_fd)</span>
-<span class="lineNum">     387 </span>                :            : {
-<span class="lineNum">     388 </span>                :            : #ifdef __sun
-<span class="lineNum">     389 </span>                :            :     // No support for ZFS
-<span class="lineNum">     390 </span>                :            :     return FILEMGR_FS_NO_COW;
-<span class="lineNum">     391 </span>                :            : #else
-<span class="lineNum">     392 </span>                :            :     int ret;
-<span class="lineNum">     393 </span>                :            :     struct statfs sfs;
-<span class="lineNum">     394 </span>                :<span class="lineNoCov">          0 :     ret = fstatfs(src_fd, &amp;sfs);</span>
-<span class="lineNum">     395 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (ret != 0) {</span>
-<span class="lineNum">     396 </span>                :<span class="lineNoCov">          0 :         return FDB_RESULT_INVALID_ARGS;</span>
-<span class="lineNum">     397 </span>                :            :     }
-<span class="lineNum">     398 </span>     [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :     switch (sfs.f_type) {</span>
-<span class="lineNum">     399 </span>                :            :         case EXT4_SUPER_MAGIC:
-<span class="lineNum">     400 </span>                :<span class="lineNoCov">          0 :             ret = _filemgr_linux_ext4_share_blks(src_fd, src_fd, 0, 0, 0);</span>
-<span class="lineNum">     401 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :             if (ret == 0) {</span>
-<span class="lineNum">     402 </span>                :<span class="lineNoCov">          0 :                 ret = FILEMGR_FS_EXT4_WITH_COW;</span>
-<span class="lineNum">     403 </span>                :            :             } else {
-<span class="lineNum">     404 </span>                :<span class="lineNoCov">          0 :                 ret = FILEMGR_FS_NO_COW;</span>
-<span class="lineNum">     405 </span>                :            :             }
-<span class="lineNum">     406 </span>                :<span class="lineNoCov">          0 :             break;</span>
-<span class="lineNum">     407 </span>                :            :         case BTRFS_SUPER_MAGIC:
-<span class="lineNum">     408 </span>                :<span class="lineNoCov">          0 :             ret = FILEMGR_FS_BTRFS;</span>
-<span class="lineNum">     409 </span>                :<span class="lineNoCov">          0 :             break;</span>
-<span class="lineNum">     410 </span>                :            :         default:
-<span class="lineNum">     411 </span>                :<span class="lineNoCov">          0 :             ret = FILEMGR_FS_NO_COW;</span>
-<span class="lineNum">     412 </span>                :            :     }
-<span class="lineNum">     413 </span>                :<span class="lineNoCov">          0 :     return ret;</span>
-<span class="lineNum">     414 </span>                :            : #endif
-<a name="415"><span class="lineNum">     415 </span>                :            : }</a>
-<span class="lineNum">     416 </span>                :            : 
-<span class="lineNum">     417 </span>                :<span class="lineNoCov">          0 : int _filemgr_linux_copy_file_range(int fs_type,</span>
-<span class="lineNum">     418 </span>                :            :                                    int src_fd, int dst_fd, uint64_t src_off,
-<span class="lineNum">     419 </span>                :            :                                    uint64_t dst_off, uint64_t len)
-<span class="lineNum">     420 </span>                :            : {
-<span class="lineNum">     421 </span>                :<span class="lineNoCov">          0 :     int ret = (int)FDB_RESULT_INVALID_ARGS;</span>
-<span class="lineNum">     422 </span>                :            : #ifndef __sun
-<span class="lineNum">     423 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if (fs_type == FILEMGR_FS_BTRFS) {</span>
-<span class="lineNum">     424 </span>                :            :         struct btrfs_ioctl_clone_range_args cr_args;
-<span class="lineNum">     425 </span>                :            : 
-<span class="lineNum">     426 </span>                :<span class="lineNoCov">          0 :         memset(&amp;cr_args, 0, sizeof(cr_args));</span>
-<span class="lineNum">     427 </span>                :<span class="lineNoCov">          0 :         cr_args.src_fd = src_fd;</span>
-<span class="lineNum">     428 </span>                :<span class="lineNoCov">          0 :         cr_args.src_offset = src_off;</span>
-<span class="lineNum">     429 </span>                :<span class="lineNoCov">          0 :         cr_args.src_length = len;</span>
-<span class="lineNum">     430 </span>                :<span class="lineNoCov">          0 :         cr_args.dest_offset = dst_off;</span>
-<span class="lineNum">     431 </span>                :<span class="lineNoCov">          0 :         ret = ioctl(dst_fd, BTRFS_IOC_CLONE_RANGE, &amp;cr_args);</span>
-<span class="lineNum">     432 </span>                :            :         if (ret != 0) { // LCOV_EXCL_START
-<span class="lineNum">     433 </span>                :            :             ret = errno;
-<span class="lineNum">     434 </span>                :            :         }              // LCOV_EXCL_STOP
-<span class="lineNum">     435 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     } else if (fs_type == FILEMGR_FS_EXT4_WITH_COW) {</span>
-<span class="lineNum">     436 </span>                :            :         ret = _filemgr_linux_ext4_share_blks(src_fd, dst_fd, src_off,
-<span class="lineNum">     437 </span>                :<span class="lineNoCov">          0 :                                              dst_off, len);</span>
-<span class="lineNum">     438 </span>                :            :     }
-<span class="lineNum">     439 </span>                :            : #endif
-<span class="lineNum">     440 </span>                :<span class="lineNoCov">          0 :     return ret;</span>
-<span class="lineNum">     441 </span>                :            : }
-<span class="lineNum">     442 </span>                :            : 
-<span class="lineNum">     443 </span>                :            : struct filemgr_ops linux_ops = {
-<span class="lineNum">     444 </span>                :            :     _filemgr_linux_open,
-<span class="lineNum">     445 </span>                :            :     _filemgr_linux_pwrite,
-<span class="lineNum">     446 </span>                :            :     _filemgr_linux_pread,
-<span class="lineNum">     447 </span>                :            :     _filemgr_linux_close,
-<span class="lineNum">     448 </span>                :            :     _filemgr_linux_goto_eof,
-<span class="lineNum">     449 </span>                :            :     _filemgr_linux_file_size,
-<span class="lineNum">     450 </span>                :            :     _filemgr_linux_fdatasync,
-<span class="lineNum">     451 </span>                :            :     _filemgr_linux_fsync,
-<span class="lineNum">     452 </span>                :            :     _filemgr_linux_get_errno_str,
-<span class="lineNum">     453 </span>                :            :     // Async I/O operations
-<span class="lineNum">     454 </span>                :            :     _filemgr_aio_init,
-<span class="lineNum">     455 </span>                :            :     _filemgr_aio_prep_read,
-<span class="lineNum">     456 </span>                :            :     _filemgr_aio_submit,
-<span class="lineNum">     457 </span>                :            :     _filemgr_aio_getevents,
-<span class="lineNum">     458 </span>                :            :     _filemgr_aio_destroy,
-<span class="lineNum">     459 </span>                :            :     _filemgr_linux_get_fs_type,
-<span class="lineNum">     460 </span>                :            :     _filemgr_linux_copy_file_range
-<a name="461"><span class="lineNum">     461 </span>                :            : };</a>
-<span class="lineNum">     462 </span>                :            : 
-<span class="lineNum">     463 </span>                :<span class="lineCov">     959313 : struct filemgr_ops * get_linux_filemgr_ops()</span>
-<span class="lineNum">     464 </span>                :            : {
-<span class="lineNum">     465 </span>                :<span class="lineCov">     959313 :     return &amp;linux_ops;</span>
-<span class="lineNum">     466 </span>                :            : }
-<span class="lineNum">     467 </span>                :            : 
-<span class="lineNum">     468 </span>                :            : #endif
+<span class="lineNum">     306 </span>                :<span class="lineCov">     958919 : struct filemgr_ops * get_linux_filemgr_ops()</span>
+<span class="lineNum">     307 </span>                :            : {
+<span class="lineNum">     308 </span>                :<span class="lineCov">     958919 :     return &amp;linux_ops;</span>
+<span class="lineNum">     309 </span>                :            : }
+<span class="lineNum">     310 </span>                :            : 
+<span class="lineNum">     311 </span>                :            : #endif
 </pre>
       </td>
     </tr>
@@ -545,7 +388,7 @@
 
   <table width="100%" border=0 cellspacing=0 cellpadding=0>
     <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
-    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.12</a></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
   </table>
   <br>
 
