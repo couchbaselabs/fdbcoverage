@@ -31,17 +31,17 @@
             <td class="headerValue">coverage.info.cleaned</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">25</td>
-            <td class="headerCovTableEntry">25</td>
+            <td class="headerCovTableEntry">33</td>
+            <td class="headerCovTableEntry">33</td>
             <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2015-12-03</td>
+            <td class="headerValue">2015-12-15</td>
             <td></td>
             <td class="headerItem">Functions:</td>
-            <td class="headerCovTableEntry">8</td>
-            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">11</td>
+            <td class="headerCovTableEntry">11</td>
             <td class="headerCovTableEntryHi">100.0 %</td>
           </tr>
           <tr>
@@ -107,340 +107,519 @@
 <span class="lineNum">      36 </span>                :            : #include &quot;hash.h&quot;
 <span class="lineNum">      37 </span>                :            : #include &quot;partiallock.h&quot;
 <span class="lineNum">      38 </span>                :            : #include &quot;atomic.h&quot;
-<span class="lineNum">      39 </span>                :            : 
-<span class="lineNum">      40 </span>                :            : #ifdef __cplusplus
-<span class="lineNum">      41 </span>                :            : extern &quot;C&quot; {
-<span class="lineNum">      42 </span>                :            : #endif
-<span class="lineNum">      43 </span>                :            : 
-<span class="lineNum">      44 </span>                :            : #define FILEMGR_SYNC 0x01
-<span class="lineNum">      45 </span>                :            : #define FILEMGR_READONLY 0x02
-<span class="lineNum">      46 </span>                :            : #define FILEMGR_ROLLBACK_IN_PROG 0x04
-<span class="lineNum">      47 </span>                :            : #define FILEMGR_CREATE 0x08
-<span class="lineNum">      48 </span>                :            : #define FILEMGR_REMOVAL_IN_PROG 0x10
-<span class="lineNum">      49 </span>                :            : 
-<span class="lineNum">      50 </span>                :            : struct filemgr_config {
-<span class="lineNum">      51 </span>                :            :     int blocksize;
-<span class="lineNum">      52 </span>                :            :     int ncacheblock;
-<span class="lineNum">      53 </span>                :            :     int flag;
-<span class="lineNum">      54 </span>                :            :     int chunksize;
-<span class="lineNum">      55 </span>                :            :     uint8_t options;
-<span class="lineNum">      56 </span>                :            :     uint64_t prefetch_duration;
-<span class="lineNum">      57 </span>                :            :     uint16_t num_wal_shards;
-<span class="lineNum">      58 </span>                :            :     uint16_t num_bcache_shards;
-<span class="lineNum">      59 </span>                :            : };
-<span class="lineNum">      60 </span>                :            : 
-<span class="lineNum">      61 </span>                :            : struct async_io_handle {
-<span class="lineNum">      62 </span>                :            : #ifdef _ASYNC_IO
-<span class="lineNum">      63 </span>                :            : #if !defined(WIN32) &amp;&amp; !defined(_WIN32)
-<span class="lineNum">      64 </span>                :            :     struct iocb **ioq;
-<span class="lineNum">      65 </span>                :            :     struct io_event *events;
-<span class="lineNum">      66 </span>                :            :     io_context_t ioctx;
-<span class="lineNum">      67 </span>                :            : #endif
-<span class="lineNum">      68 </span>                :            : #endif
-<span class="lineNum">      69 </span>                :            :     uint8_t *aio_buf;
-<span class="lineNum">      70 </span>                :            :     uint64_t *offset_array;
-<span class="lineNum">      71 </span>                :            :     size_t queue_depth;
-<span class="lineNum">      72 </span>                :            :     size_t block_size;
-<span class="lineNum">      73 </span>                :            :     int fd;
-<span class="lineNum">      74 </span>                :            : };
-<span class="lineNum">      75 </span>                :            : 
-<span class="lineNum">      76 </span>                :            : struct filemgr_ops {
-<span class="lineNum">      77 </span>                :            :     int (*open)(const char *pathname, int flags, mode_t mode);
-<span class="lineNum">      78 </span>                :            :     ssize_t (*pwrite)(int fd, void *buf, size_t count, cs_off_t offset);
-<span class="lineNum">      79 </span>                :            :     ssize_t (*pread)(int fd, void *buf, size_t count, cs_off_t offset);
-<span class="lineNum">      80 </span>                :            :     int (*close)(int fd);
-<span class="lineNum">      81 </span>                :            :     cs_off_t (*goto_eof)(int fd);
-<span class="lineNum">      82 </span>                :            :     cs_off_t (*file_size)(const char *filename);
-<span class="lineNum">      83 </span>                :            :     int (*fdatasync)(int fd);
-<span class="lineNum">      84 </span>                :            :     int (*fsync)(int fd);
-<span class="lineNum">      85 </span>                :            :     void (*get_errno_str)(char *buf, size_t size);
-<span class="lineNum">      86 </span>                :            : 
-<span class="lineNum">      87 </span>                :            :     // Async I/O operations
-<span class="lineNum">      88 </span>                :            :     int (*aio_init)(struct async_io_handle *aio_handle);
-<span class="lineNum">      89 </span>                :            :     int (*aio_prep_read)(struct async_io_handle *aio_handle, size_t aio_idx,
-<span class="lineNum">      90 </span>                :            :                          size_t read_size, uint64_t offset);
-<span class="lineNum">      91 </span>                :            :     int (*aio_submit)(struct async_io_handle *aio_handle, int num_subs);
-<span class="lineNum">      92 </span>                :            :     int (*aio_getevents)(struct async_io_handle *aio_handle, int min,
-<span class="lineNum">      93 </span>                :            :                          int max, unsigned int timeout);
-<span class="lineNum">      94 </span>                :            :     int (*aio_destroy)(struct async_io_handle *aio_handle);
-<span class="lineNum">      95 </span>                :            : };
-<span class="lineNum">      96 </span>                :            : 
-<span class="lineNum">      97 </span>                :            : struct filemgr_buffer{
-<span class="lineNum">      98 </span>                :            :     void *block;
-<span class="lineNum">      99 </span>                :            :     bid_t lastbid;
-<span class="lineNum">     100 </span>                :            : };
-<span class="lineNum">     101 </span>                :            : 
-<span class="lineNum">     102 </span>                :            : typedef uint16_t filemgr_header_len_t;
-<span class="lineNum">     103 </span>                :            : typedef uint64_t filemgr_magic_t;
-<span class="lineNum">     104 </span>                :            : typedef uint64_t filemgr_header_revnum_t;
-<span class="lineNum">     105 </span>                :            : 
-<span class="lineNum">     106 </span>                :            : struct filemgr_header{
-<span class="lineNum">     107 </span>                :            :     filemgr_header_len_t size;
-<span class="lineNum">     108 </span>                :            :     filemgr_header_revnum_t revnum;
-<span class="lineNum">     109 </span>                :            :     volatile fdb_seqnum_t seqnum;
-<span class="lineNum">     110 </span>                :            :     atomic_uint64_t bid;
-<span class="lineNum">     111 </span>                :            :     atomic_uint64_t dirty_idtree_root; // for wal_flush_before_commit option
-<span class="lineNum">     112 </span>                :            :     atomic_uint64_t dirty_seqtree_root; // for wal_flush_before_commit option
-<span class="lineNum">     113 </span>                :            :     struct kvs_ops_stat op_stat; // op stats for default KVS
-<span class="lineNum">     114 </span>                :            :     struct kvs_stat stat; // stats for the default KVS
-<span class="lineNum">     115 </span>                :            :     void *data;
-<span class="lineNum">     116 </span>                :            : };
-<span class="lineNum">     117 </span>                :            : 
-<span class="lineNum">     118 </span>                :            : typedef uint8_t filemgr_prefetch_status_t;
-<span class="lineNum">     119 </span>                :            : enum {
-<span class="lineNum">     120 </span>                :            :     FILEMGR_PREFETCH_IDLE = 0,
-<span class="lineNum">     121 </span>                :            :     FILEMGR_PREFETCH_RUNNING = 1,
-<span class="lineNum">     122 </span>                :            :     FILEMGR_PREFETCH_ABORT = 2
-<span class="lineNum">     123 </span>                :            : };
-<span class="lineNum">     124 </span>                :            : 
-<span class="lineNum">     125 </span>                :            : #define DLOCK_MAX (41) /* a prime number */
-<span class="lineNum">     126 </span>                :            : struct wal;
-<span class="lineNum">     127 </span>                :            : struct fnamedic_item;
-<span class="lineNum">     128 </span>                :            : struct kvs_header;
-<span class="lineNum">     129 </span>                :            : 
-<span class="lineNum">     130 </span>                :            : typedef struct {
-<span class="lineNum">     131 </span>                :            :     mutex_t mutex;
-<span class="lineNum">     132 </span>                :            :     bool locked;
-<span class="lineNum">     133 </span>                :            : } mutex_lock_t;
-<span class="lineNum">     134 </span>                :            : 
-<span class="lineNum">     135 </span>                :            : struct filemgr {
-<span class="lineNum">     136 </span>                :            :     char *filename; // Current file name.
-<span class="lineNum">     137 </span>                :            :     uint32_t ref_count;
-<span class="lineNum">     138 </span>                :            :     uint8_t fflags;
-<span class="lineNum">     139 </span>                :            :     uint16_t filename_len;
-<span class="lineNum">     140 </span>                :            :     uint32_t blocksize;
-<span class="lineNum">     141 </span>                :            :     int fd;
-<span class="lineNum">     142 </span>                :            :     atomic_uint64_t pos;
-<span class="lineNum">     143 </span>                :            :     atomic_uint64_t last_commit;
-<span class="lineNum">     144 </span>                :            :     struct wal *wal;
-<span class="lineNum">     145 </span>                :            :     struct filemgr_header header;
-<span class="lineNum">     146 </span>                :            :     struct filemgr_ops *ops;
-<span class="lineNum">     147 </span>                :            :     struct hash_elem e;
-<span class="lineNum">     148 </span>                :            :     atomic_uint8_t status;
-<span class="lineNum">     149 </span>                :            :     struct filemgr_config *config;
-<span class="lineNum">     150 </span>                :            :     struct filemgr *new_file;
-<span class="lineNum">     151 </span>                :            :     char *old_filename; // Old file name before compaction.
-<span class="lineNum">     152 </span>                :            :     struct fnamedic_item *bcache;
-<span class="lineNum">     153 </span>                :            :     fdb_txn global_txn;
-<span class="lineNum">     154 </span>                :            :     bool in_place_compaction;
-<span class="lineNum">     155 </span>                :            :     struct kvs_header *kv_header;
-<span class="lineNum">     156 </span>                :            :     void (*free_kv_header)(struct filemgr *file); // callback function
-<span class="lineNum">     157 </span>                :            :     atomic_uint32_t throttling_delay;
-<span class="lineNum">     158 </span>                :            : 
-<span class="lineNum">     159 </span>                :            :     // variables related to prefetching
-<span class="lineNum">     160 </span>                :            :     volatile filemgr_prefetch_status_t prefetch_status;
-<span class="lineNum">     161 </span>                :            :     thread_t prefetch_tid;
-<span class="lineNum">     162 </span>                :            : 
-<span class="lineNum">     163 </span>                :            :     // spin lock for small region
-<span class="lineNum">     164 </span>                :            :     spin_t lock;
-<span class="lineNum">     165 </span>                :            : 
-<span class="lineNum">     166 </span>                :            :     // lock for data consistency
-<span class="lineNum">     167 </span>                :            : #ifdef __FILEMGR_DATA_PARTIAL_LOCK
-<span class="lineNum">     168 </span>                :            :     struct plock plock;
-<span class="lineNum">     169 </span>                :            : #elif defined(__FILEMGR_DATA_MUTEX_LOCK)
-<span class="lineNum">     170 </span>                :            :     mutex_t data_mutex[DLOCK_MAX];
-<span class="lineNum">     171 </span>                :            : #else
-<span class="lineNum">     172 </span>                :            :     spin_t data_spinlock[DLOCK_MAX];
-<span class="lineNum">     173 </span>                :            : #endif //__FILEMGR_DATA_PARTIAL_LOCK
-<span class="lineNum">     174 </span>                :            : 
-<span class="lineNum">     175 </span>                :            :     // mutex for synchronization among multiple writers.
-<span class="lineNum">     176 </span>                :            :     mutex_lock_t writer_lock;
-<span class="lineNum">     177 </span>                :            : };
-<span class="lineNum">     178 </span>                :            : 
-<span class="lineNum">     179 </span>                :            : typedef fdb_status (*register_file_removal_func)(struct filemgr *file,
-<span class="lineNum">     180 </span>                :            :                                                  err_log_callback *log_callback);
-<span class="lineNum">     181 </span>                :            : typedef bool (*check_file_removal_func)(const char *filename);
-<span class="lineNum">     182 </span>                :            : 
-<span class="lineNum">     183 </span>                :            : typedef struct {
-<span class="lineNum">     184 </span>                :            :     struct filemgr *file;
-<span class="lineNum">     185 </span>                :            :     int rv;
-<span class="lineNum">     186 </span>                :            : } filemgr_open_result;
-<span class="lineNum">     187 </span>                :            : 
-<span class="lineNum">     188 </span>                :            : void filemgr_init(struct filemgr_config *config);
-<span class="lineNum">     189 </span>                :            : void filemgr_set_lazy_file_deletion(bool enable,
-<span class="lineNum">     190 </span>                :            :                                     register_file_removal_func regis_func,
-<span class="lineNum">     191 </span>                :            :                                     check_file_removal_func check_func);
-<span class="lineNum">     192 </span>                :            : 
-<span class="lineNum">     193 </span>                :            : uint64_t filemgr_get_bcache_used_space(void);
-<span class="lineNum">     194 </span>                :            : 
-<a name="195"><span class="lineNum">     195 </span>                :            : size_t filemgr_get_ref_count(struct filemgr *file);</a>
-<span class="lineNum">     196 </span>                :            : 
-<span class="lineNum">     197 </span>                :<span class="lineCov">         34 : INLINE void filemgr_incr_ref_count(struct filemgr *file) {</span>
-<span class="lineNum">     198 </span>                :<span class="lineCov">         34 :     spin_lock(&amp;file-&gt;lock);</span>
-<span class="lineNum">     199 </span>                :<span class="lineCov">         34 :     ++file-&gt;ref_count;</span>
-<span class="lineNum">     200 </span>                :<span class="lineCov">         34 :     spin_unlock(&amp;file-&gt;lock);</span>
-<span class="lineNum">     201 </span>                :<span class="lineCov">         34 : }</span>
-<span class="lineNum">     202 </span>                :            : 
-<span class="lineNum">     203 </span>                :            : filemgr_open_result filemgr_open(char *filename,
-<span class="lineNum">     204 </span>                :            :                                  struct filemgr_ops *ops,
-<span class="lineNum">     205 </span>                :            :                                  struct filemgr_config *config,
-<span class="lineNum">     206 </span>                :            :                                  err_log_callback *log_callback);
+<span class="lineNum">      39 </span>                :            : #include &quot;checksum.h&quot;
+<span class="lineNum">      40 </span>                :            : #include &quot;filemgr_ops.h&quot;
+<span class="lineNum">      41 </span>                :            : #include &quot;encryption.h&quot;
+<span class="lineNum">      42 </span>                :            : 
+<span class="lineNum">      43 </span>                :            : #ifdef __cplusplus
+<span class="lineNum">      44 </span>                :            : extern &quot;C&quot; {
+<span class="lineNum">      45 </span>                :            : #endif
+<span class="lineNum">      46 </span>                :            : 
+<span class="lineNum">      47 </span>                :            : #define FILEMGR_SYNC 0x01
+<span class="lineNum">      48 </span>                :            : #define FILEMGR_READONLY 0x02
+<span class="lineNum">      49 </span>                :            : #define FILEMGR_ROLLBACK_IN_PROG 0x04
+<span class="lineNum">      50 </span>                :            : #define FILEMGR_CREATE 0x08
+<span class="lineNum">      51 </span>                :            : #define FILEMGR_REMOVAL_IN_PROG 0x10
+<span class="lineNum">      52 </span>                :            : #define FILEMGR_CREATE_CRC32 0x20 // Used in testing upgrade path
+<span class="lineNum">      53 </span>                :            : 
+<span class="lineNum">      54 </span>                :            : struct filemgr_config {
+<span class="lineNum">      55 </span>                :            :     int blocksize;
+<span class="lineNum">      56 </span>                :            :     int ncacheblock;
+<span class="lineNum">      57 </span>                :            :     int flag;
+<span class="lineNum">      58 </span>                :            :     int chunksize;
+<span class="lineNum">      59 </span>                :            :     uint8_t options;
+<span class="lineNum">      60 </span>                :            :     uint64_t prefetch_duration;
+<span class="lineNum">      61 </span>                :            :     uint16_t num_wal_shards;
+<span class="lineNum">      62 </span>                :            :     uint16_t num_bcache_shards;
+<span class="lineNum">      63 </span>                :            :     fdb_encryption_key encryption_key;
+<span class="lineNum">      64 </span>                :            : };
+<span class="lineNum">      65 </span>                :            : 
+<span class="lineNum">      66 </span>                :            : #ifndef _LATENCY_STATS
+<span class="lineNum">      67 </span>                :            : #define LATENCY_STAT_START()
+<span class="lineNum">      68 </span>                :            : #define LATENCY_STAT_END(file, type)
+<span class="lineNum">      69 </span>                :            : #else
+<span class="lineNum">      70 </span>                :            : #define LATENCY_STAT_START() \
+<span class="lineNum">      71 </span>                :            :      uint64_t begin=get_monotonic_ts();
+<span class="lineNum">      72 </span>                :            : #define LATENCY_STAT_END(file, type)\
+<span class="lineNum">      73 </span>                :            :     do {\
+<span class="lineNum">      74 </span>                :            :         uint64_t end = get_monotonic_ts();\
+<span class="lineNum">      75 </span>                :            :         filemgr_update_latency_stat(file, type, ts_diff(begin, end));} while(0)
+<span class="lineNum">      76 </span>                :            : 
+<span class="lineNum">      77 </span>                :            : struct latency_stat {
+<span class="lineNum">      78 </span>                :            :     atomic_uint32_t lat_min;
+<span class="lineNum">      79 </span>                :            :     atomic_uint32_t lat_max;
+<span class="lineNum">      80 </span>                :            :     atomic_uint64_t lat_sum;
+<span class="lineNum">      81 </span>                :            :     atomic_uint64_t lat_num;
+<span class="lineNum">      82 </span>                :            : };
+<span class="lineNum">      83 </span>                :            : 
+<span class="lineNum">      84 </span>                :            : #endif // _LATENCY_STATS
+<span class="lineNum">      85 </span>                :            : 
+<span class="lineNum">      86 </span>                :            : struct async_io_handle {
+<span class="lineNum">      87 </span>                :            : #ifdef _ASYNC_IO
+<span class="lineNum">      88 </span>                :            : #if !defined(WIN32) &amp;&amp; !defined(_WIN32)
+<span class="lineNum">      89 </span>                :            :     struct iocb **ioq;
+<span class="lineNum">      90 </span>                :            :     struct io_event *events;
+<span class="lineNum">      91 </span>                :            :     io_context_t ioctx;
+<span class="lineNum">      92 </span>                :            : #endif
+<span class="lineNum">      93 </span>                :            : #endif
+<span class="lineNum">      94 </span>                :            :     uint8_t *aio_buf;
+<span class="lineNum">      95 </span>                :            :     uint64_t *offset_array;
+<span class="lineNum">      96 </span>                :            :     size_t queue_depth;
+<span class="lineNum">      97 </span>                :            :     size_t block_size;
+<span class="lineNum">      98 </span>                :            :     int fd;
+<span class="lineNum">      99 </span>                :            : };
+<span class="lineNum">     100 </span>                :            : 
+<span class="lineNum">     101 </span>                :            : typedef int filemgr_fs_type_t;
+<span class="lineNum">     102 </span>                :            : enum {
+<span class="lineNum">     103 </span>                :            :     FILEMGR_FS_NO_COW = 0x01,
+<span class="lineNum">     104 </span>                :            :     FILEMGR_FS_EXT4_WITH_COW = 0x02,
+<span class="lineNum">     105 </span>                :            :     FILEMGR_FS_BTRFS = 0x03
+<span class="lineNum">     106 </span>                :            : };
+<span class="lineNum">     107 </span>                :            : 
+<span class="lineNum">     108 </span>                :            : struct filemgr_buffer{
+<span class="lineNum">     109 </span>                :            :     void *block;
+<span class="lineNum">     110 </span>                :            :     bid_t lastbid;
+<span class="lineNum">     111 </span>                :            : };
+<span class="lineNum">     112 </span>                :            : 
+<span class="lineNum">     113 </span>                :            : typedef uint16_t filemgr_header_len_t;
+<span class="lineNum">     114 </span>                :            : typedef uint64_t filemgr_magic_t;
+<span class="lineNum">     115 </span>                :            : typedef uint64_t filemgr_header_revnum_t;
+<span class="lineNum">     116 </span>                :            : 
+<span class="lineNum">     117 </span>                :            : struct filemgr_header{
+<span class="lineNum">     118 </span>                :            :     filemgr_header_len_t size;
+<span class="lineNum">     119 </span>                :            :     filemgr_header_revnum_t revnum;
+<span class="lineNum">     120 </span>                :            :     volatile fdb_seqnum_t seqnum;
+<span class="lineNum">     121 </span>                :            :     atomic_uint64_t bid;
+<span class="lineNum">     122 </span>                :            :     atomic_uint64_t dirty_idtree_root; // for wal_flush_before_commit option
+<span class="lineNum">     123 </span>                :            :     atomic_uint64_t dirty_seqtree_root; // for wal_flush_before_commit option
+<span class="lineNum">     124 </span>                :            :     struct kvs_ops_stat op_stat; // op stats for default KVS
+<span class="lineNum">     125 </span>                :            :     struct kvs_stat stat; // stats for the default KVS
+<span class="lineNum">     126 </span>                :            :     void *data;
+<span class="lineNum">     127 </span>                :            : };
+<span class="lineNum">     128 </span>                :            : 
+<span class="lineNum">     129 </span>                :            : typedef uint8_t filemgr_prefetch_status_t;
+<span class="lineNum">     130 </span>                :            : enum {
+<span class="lineNum">     131 </span>                :            :     FILEMGR_PREFETCH_IDLE = 0,
+<span class="lineNum">     132 </span>                :            :     FILEMGR_PREFETCH_RUNNING = 1,
+<span class="lineNum">     133 </span>                :            :     FILEMGR_PREFETCH_ABORT = 2
+<span class="lineNum">     134 </span>                :            : };
+<span class="lineNum">     135 </span>                :            : 
+<span class="lineNum">     136 </span>                :            : #define DLOCK_MAX (41) /* a prime number */
+<span class="lineNum">     137 </span>                :            : struct wal;
+<span class="lineNum">     138 </span>                :            : struct fnamedic_item;
+<span class="lineNum">     139 </span>                :            : struct kvs_header;
+<span class="lineNum">     140 </span>                :            : 
+<span class="lineNum">     141 </span>                :            : typedef struct {
+<span class="lineNum">     142 </span>                :            :     mutex_t mutex;
+<span class="lineNum">     143 </span>                :            :     bool locked;
+<span class="lineNum">     144 </span>                :            : } mutex_lock_t;
+<span class="lineNum">     145 </span>                :            : 
+<span class="lineNum">     146 </span>                :            : struct filemgr {
+<span class="lineNum">     147 </span>                :            :     char *filename; // Current file name.
+<span class="lineNum">     148 </span>                :            :     uint32_t ref_count;
+<span class="lineNum">     149 </span>                :            :     uint8_t fflags;
+<span class="lineNum">     150 </span>                :            :     uint16_t filename_len;
+<span class="lineNum">     151 </span>                :            :     uint32_t blocksize;
+<span class="lineNum">     152 </span>                :            :     int fd;
+<span class="lineNum">     153 </span>                :            :     atomic_uint64_t pos;
+<span class="lineNum">     154 </span>                :            :     atomic_uint64_t last_commit;
+<span class="lineNum">     155 </span>                :            :     atomic_uint64_t num_invalidated_blocks;
+<span class="lineNum">     156 </span>                :            :     atomic_uint8_t io_in_prog;
+<span class="lineNum">     157 </span>                :            :     struct wal *wal;
+<span class="lineNum">     158 </span>                :            :     struct filemgr_header header;
+<span class="lineNum">     159 </span>                :            :     struct filemgr_ops *ops;
+<span class="lineNum">     160 </span>                :            :     struct hash_elem e;
+<span class="lineNum">     161 </span>                :            :     atomic_uint8_t status;
+<span class="lineNum">     162 </span>                :            :     struct filemgr_config *config;
+<span class="lineNum">     163 </span>                :            :     struct filemgr *new_file;
+<span class="lineNum">     164 </span>                :            :     char *old_filename; // Old file name before compaction.
+<span class="lineNum">     165 </span>                :            :     struct fnamedic_item *bcache;
+<span class="lineNum">     166 </span>                :            :     fdb_txn global_txn;
+<span class="lineNum">     167 </span>                :            :     bool in_place_compaction;
+<span class="lineNum">     168 </span>                :            :     filemgr_fs_type_t fs_type;
+<span class="lineNum">     169 </span>                :            :     struct kvs_header *kv_header;
+<span class="lineNum">     170 </span>                :            :     void (*free_kv_header)(struct filemgr *file); // callback function
+<span class="lineNum">     171 </span>                :            :     atomic_uint32_t throttling_delay;
+<span class="lineNum">     172 </span>                :            : 
+<span class="lineNum">     173 </span>                :            :     // variables related to prefetching
+<span class="lineNum">     174 </span>                :            :     atomic_uint8_t prefetch_status;
+<span class="lineNum">     175 </span>                :            :     thread_t prefetch_tid;
+<span class="lineNum">     176 </span>                :            : 
+<span class="lineNum">     177 </span>                :            :     // File format version
+<span class="lineNum">     178 </span>                :            :     uint64_t version;
+<span class="lineNum">     179 </span>                :            : 
+<span class="lineNum">     180 </span>                :            : #ifdef _LATENCY_STATS
+<span class="lineNum">     181 </span>                :            :     struct latency_stat lat_stats[FDB_LATENCY_NUM_STATS];
+<span class="lineNum">     182 </span>                :            : #endif //_LATENCY_STATS
+<span class="lineNum">     183 </span>                :            : 
+<span class="lineNum">     184 </span>                :            :     // spin lock for small region
+<span class="lineNum">     185 </span>                :            :     spin_t lock;
+<span class="lineNum">     186 </span>                :            : 
+<span class="lineNum">     187 </span>                :            :     // lock for data consistency
+<span class="lineNum">     188 </span>                :            : #ifdef __FILEMGR_DATA_PARTIAL_LOCK
+<span class="lineNum">     189 </span>                :            :     struct plock plock;
+<span class="lineNum">     190 </span>                :            : #elif defined(__FILEMGR_DATA_MUTEX_LOCK)
+<span class="lineNum">     191 </span>                :            :     mutex_t data_mutex[DLOCK_MAX];
+<span class="lineNum">     192 </span>                :            : #else
+<span class="lineNum">     193 </span>                :            :     spin_t data_spinlock[DLOCK_MAX];
+<span class="lineNum">     194 </span>                :            : #endif //__FILEMGR_DATA_PARTIAL_LOCK
+<span class="lineNum">     195 </span>                :            : 
+<span class="lineNum">     196 </span>                :            :     // mutex for synchronization among multiple writers.
+<span class="lineNum">     197 </span>                :            :     mutex_lock_t writer_lock;
+<span class="lineNum">     198 </span>                :            : 
+<span class="lineNum">     199 </span>                :            :     // CRC the file is using.
+<span class="lineNum">     200 </span>                :            :     crc_mode_e crc_mode;
+<span class="lineNum">     201 </span>                :            : 
+<span class="lineNum">     202 </span>                :            :     encryptor encryption;
+<span class="lineNum">     203 </span>                :            : 
+<span class="lineNum">     204 </span>                :            :     // temporary in-memory list of stale blocks
+<span class="lineNum">     205 </span>                :            :     struct list *stale_list;
+<span class="lineNum">     206 </span>                :            : };
 <span class="lineNum">     207 </span>                :            : 
-<span class="lineNum">     208 </span>                :            : uint64_t filemgr_update_header(struct filemgr *file, void *buf, size_t len);
-<span class="lineNum">     209 </span>                :            : filemgr_header_revnum_t filemgr_get_header_revnum(struct filemgr *file);
-<span class="lineNum">     210 </span>                :            : 
-<span class="lineNum">     211 </span>                :            : fdb_seqnum_t filemgr_get_seqnum(struct filemgr *file);
-<a name="212"><span class="lineNum">     212 </span>                :            : void filemgr_set_seqnum(struct filemgr *file, fdb_seqnum_t seqnum);</a>
-<span class="lineNum">     213 </span>                :            : 
-<span class="lineNum">     214 </span>                :<span class="lineCov">      75269 : INLINE bid_t filemgr_get_header_bid(struct filemgr *file)</span>
-<span class="lineNum">     215 </span>                :            : {
-<span class="lineNum">     216 </span>                :<span class="lineCov">      75269 :     return ((file-&gt;header.size &gt; 0) ?</span>
-<span class="lineNum">     217 </span>        [<span class="branchCov" title="Branch 0 was taken 74041 times"> + </span><span class="branchCov" title="Branch 1 was taken 1228 times"> + </span>]:<span class="lineCov">      75269 :             atomic_get_uint64_t(&amp;file-&gt;header.bid) : BLK_NOT_FOUND);</span>
-<span class="lineNum">     218 </span>                :            : }
-<span class="lineNum">     219 </span>                :            : bid_t _filemgr_get_header_bid(struct filemgr *file);
-<span class="lineNum">     220 </span>                :            : void* filemgr_get_header(struct filemgr *file, void *buf, size_t *len,
-<span class="lineNum">     221 </span>                :            :                          bid_t *header_bid, fdb_seqnum_t *seqnum,
-<span class="lineNum">     222 </span>                :            :                          filemgr_header_revnum_t *header_revnum);
-<span class="lineNum">     223 </span>                :            : fdb_status filemgr_fetch_header(struct filemgr *file, uint64_t bid,
-<span class="lineNum">     224 </span>                :            :                                 void *buf, size_t *len, fdb_seqnum_t *seqnum,
-<span class="lineNum">     225 </span>                :            :                                 filemgr_header_revnum_t *header_revnum,
-<span class="lineNum">     226 </span>                :            :                                 err_log_callback *log_callback);
-<span class="lineNum">     227 </span>                :            : uint64_t filemgr_fetch_prev_header(struct filemgr *file, uint64_t bid,
-<span class="lineNum">     228 </span>                :            :                                    void *buf, size_t *len, fdb_seqnum_t *seqnum,
-<span class="lineNum">     229 </span>                :            :                                    err_log_callback *log_callback);
-<span class="lineNum">     230 </span>                :            : fdb_status filemgr_close(struct filemgr *file,
-<span class="lineNum">     231 </span>                :            :                          bool cleanup_cache_onclose,
-<span class="lineNum">     232 </span>                :            :                          const char *orig_file_name,
-<span class="lineNum">     233 </span>                :            :                          err_log_callback *log_callback);
-<span class="lineNum">     234 </span>                :            : 
-<span class="lineNum">     235 </span>                :            : void filemgr_remove_all_buffer_blocks(struct filemgr *file);
-<a name="236"><span class="lineNum">     236 </span>                :            : void filemgr_free_func(struct hash_elem *h);</a>
-<span class="lineNum">     237 </span>                :            : 
-<span class="lineNum">     238 </span>                :<span class="lineCov">      68731 : INLINE bid_t filemgr_get_next_alloc_block(struct filemgr *file)</span>
-<span class="lineNum">     239 </span>                :            : {
-<span class="lineNum">     240 </span>                :<span class="lineCov">      68731 :     return atomic_get_uint64_t(&amp;file-&gt;pos) / file-&gt;blocksize;</span>
-<span class="lineNum">     241 </span>                :            : }
-<span class="lineNum">     242 </span>                :            : bid_t filemgr_alloc(struct filemgr *file, err_log_callback *log_callback);
-<span class="lineNum">     243 </span>                :            : void filemgr_alloc_multiple(struct filemgr *file, int nblock, bid_t *begin,
-<span class="lineNum">     244 </span>                :            :                             bid_t *end, err_log_callback *log_callback);
-<span class="lineNum">     245 </span>                :            : bid_t filemgr_alloc_multiple_cond(struct filemgr *file, bid_t nextbid, int nblock,
-<span class="lineNum">     246 </span>                :            :                                   bid_t *begin, bid_t *end,
-<span class="lineNum">     247 </span>                :            :                                   err_log_callback *log_callback);
-<span class="lineNum">     248 </span>                :            : 
-<span class="lineNum">     249 </span>                :            : void filemgr_invalidate_block(struct filemgr *file, bid_t bid);
-<span class="lineNum">     250 </span>                :            : 
-<span class="lineNum">     251 </span>                :            : fdb_status filemgr_read(struct filemgr *file,
-<span class="lineNum">     252 </span>                :            :                         bid_t bid, void *buf,
-<span class="lineNum">     253 </span>                :            :                         err_log_callback *log_callback,
-<span class="lineNum">     254 </span>                :            :                         bool read_on_cache_miss);
-<span class="lineNum">     255 </span>                :            : 
-<span class="lineNum">     256 </span>                :            : fdb_status filemgr_write_offset(struct filemgr *file, bid_t bid, uint64_t offset,
-<span class="lineNum">     257 </span>                :            :                           uint64_t len, void *buf, err_log_callback *log_callback);
-<a name="258"><span class="lineNum">     258 </span>                :            : fdb_status filemgr_write(struct filemgr *file, bid_t bid, void *buf,</a>
-<span class="lineNum">     259 </span>                :            :                    err_log_callback *log_callback);
-<span class="lineNum">     260 </span>                :<span class="lineCov">   40151788 : INLINE int filemgr_is_writable(struct filemgr *file, bid_t bid)</span>
-<span class="lineNum">     261 </span>                :            : {
-<span class="lineNum">     262 </span>                :<span class="lineCov">   40151788 :     uint64_t pos = bid * file-&gt;blocksize;</span>
-<span class="lineNum">     263 </span>                :            :     // Note that we don't need to grab file-&gt;lock here because
-<span class="lineNum">     264 </span>                :            :     // 1) both file-&gt;pos and file-&gt;last_commit are only incremented.
-<span class="lineNum">     265 </span>                :            :     // 2) file-&gt;last_commit is updated using the value of file-&gt;pos,
-<span class="lineNum">     266 </span>                :            :     //    and always equal to or smaller than file-&gt;pos.
-<span class="lineNum">     267 </span>  [<span class="branchCov" title="Branch 1 was taken 40366336 times"> + </span><span class="branchCov" title="Branch 2 was taken 108432 times"> + </span><span class="branchCov" title="Branch 3 was taken 28075602 times"> + </span><span class="branchCov" title="Branch 4 was taken 12287698 times"> + </span>]:<span class="lineCov">   80515088 :     return (pos &lt;  atomic_get_uint64_t(&amp;file-&gt;pos) &amp;&amp;</span>
-<span class="lineNum">     268 </span>                :<span class="lineCov">   80838028 :             pos &gt;= atomic_get_uint64_t(&amp;file-&gt;last_commit));</span>
-<span class="lineNum">     269 </span>                :            : }
-<span class="lineNum">     270 </span>                :            : void filemgr_remove_file(struct filemgr *file);
-<span class="lineNum">     271 </span>                :            : 
-<span class="lineNum">     272 </span>                :            : fdb_status filemgr_commit(struct filemgr *file,
-<span class="lineNum">     273 </span>                :            :                           err_log_callback *log_callback);
-<span class="lineNum">     274 </span>                :            : fdb_status filemgr_sync(struct filemgr *file,
-<span class="lineNum">     275 </span>                :            :                         err_log_callback *log_callback);
-<span class="lineNum">     276 </span>                :            : 
-<span class="lineNum">     277 </span>                :            : fdb_status filemgr_shutdown();
-<span class="lineNum">     278 </span>                :            : int filemgr_update_file_status(struct filemgr *file, file_status_t status,
-<span class="lineNum">     279 </span>                :            :                                 char *old_filename);
-<span class="lineNum">     280 </span>                :            : void filemgr_set_compaction_state(struct filemgr *old_file,
-<span class="lineNum">     281 </span>                :            :                                   struct filemgr *new_file,
-<span class="lineNum">     282 </span>                :            :                                   file_status_t status);
-<span class="lineNum">     283 </span>                :            : void filemgr_remove_pending(struct filemgr *old_file, struct filemgr *new_file);
+<span class="lineNum">     208 </span>                :            : typedef fdb_status (*register_file_removal_func)(struct filemgr *file,
+<span class="lineNum">     209 </span>                :            :                                                  err_log_callback *log_callback);
+<span class="lineNum">     210 </span>                :            : typedef bool (*check_file_removal_func)(const char *filename);
+<span class="lineNum">     211 </span>                :            : 
+<span class="lineNum">     212 </span>                :            : typedef struct {
+<span class="lineNum">     213 </span>                :            :     struct filemgr *file;
+<span class="lineNum">     214 </span>                :            :     int rv;
+<span class="lineNum">     215 </span>                :            : } filemgr_open_result;
+<span class="lineNum">     216 </span>                :            : 
+<span class="lineNum">     217 </span>                :            : void filemgr_init(struct filemgr_config *config);
+<span class="lineNum">     218 </span>                :            : void filemgr_set_lazy_file_deletion(bool enable,
+<span class="lineNum">     219 </span>                :            :                                     register_file_removal_func regis_func,
+<span class="lineNum">     220 </span>                :            :                                     check_file_removal_func check_func);
+<span class="lineNum">     221 </span>                :            : 
+<span class="lineNum">     222 </span>                :            : uint64_t filemgr_get_bcache_used_space(void);
+<span class="lineNum">     223 </span>                :            : 
+<span class="lineNum">     224 </span>                :            : bool filemgr_set_kv_header(struct filemgr *file, struct kvs_header *kv_header,
+<span class="lineNum">     225 </span>                :            :                            void (*free_kv_header)(struct filemgr *file),
+<span class="lineNum">     226 </span>                :            :                            bool got_lock);
+<span class="lineNum">     227 </span>                :            : 
+<a name="228"><span class="lineNum">     228 </span>                :            : size_t filemgr_get_ref_count(struct filemgr *file);</a>
+<span class="lineNum">     229 </span>                :            : 
+<span class="lineNum">     230 </span>                :<span class="lineCov">         34 : INLINE void filemgr_incr_ref_count(struct filemgr *file) {</span>
+<span class="lineNum">     231 </span>                :<span class="lineCov">         34 :     spin_lock(&amp;file-&gt;lock);</span>
+<span class="lineNum">     232 </span>                :<span class="lineCov">         34 :     ++file-&gt;ref_count;</span>
+<span class="lineNum">     233 </span>                :<span class="lineCov">         34 :     spin_unlock(&amp;file-&gt;lock);</span>
+<span class="lineNum">     234 </span>                :<span class="lineCov">         34 : }</span>
+<span class="lineNum">     235 </span>                :            : 
+<span class="lineNum">     236 </span>                :            : filemgr_open_result filemgr_open(char *filename,
+<span class="lineNum">     237 </span>                :            :                                  struct filemgr_ops *ops,
+<span class="lineNum">     238 </span>                :            :                                  struct filemgr_config *config,
+<span class="lineNum">     239 </span>                :            :                                  err_log_callback *log_callback);
+<span class="lineNum">     240 </span>                :            : 
+<span class="lineNum">     241 </span>                :            : uint64_t filemgr_update_header(struct filemgr *file, void *buf, size_t len);
+<span class="lineNum">     242 </span>                :            : filemgr_header_revnum_t filemgr_get_header_revnum(struct filemgr *file);
+<span class="lineNum">     243 </span>                :            : 
+<span class="lineNum">     244 </span>                :            : fdb_seqnum_t filemgr_get_seqnum(struct filemgr *file);
+<a name="245"><span class="lineNum">     245 </span>                :            : void filemgr_set_seqnum(struct filemgr *file, fdb_seqnum_t seqnum);</a>
+<span class="lineNum">     246 </span>                :            : 
+<span class="lineNum">     247 </span>                :<span class="lineCov">    1029141 : INLINE bid_t filemgr_get_header_bid(struct filemgr *file)</span>
+<span class="lineNum">     248 </span>                :            : {
+<span class="lineNum">     249 </span>                :<span class="lineCov">    1029141 :     return ((file-&gt;header.size &gt; 0) ?</span>
+<span class="lineNum">     250 </span>        [<span class="branchCov" title="Branch 0 was taken 1027621 times"> + </span><span class="branchCov" title="Branch 1 was taken 1520 times"> + </span>]:<span class="lineCov">    1029141 :             atomic_get_uint64_t(&amp;file-&gt;header.bid) : BLK_NOT_FOUND);</span>
+<span class="lineNum">     251 </span>                :            : }
+<span class="lineNum">     252 </span>                :            : bid_t _filemgr_get_header_bid(struct filemgr *file);
+<span class="lineNum">     253 </span>                :            : void* filemgr_get_header(struct filemgr *file, void *buf, size_t *len,
+<span class="lineNum">     254 </span>                :            :                          bid_t *header_bid, fdb_seqnum_t *seqnum,
+<span class="lineNum">     255 </span>                :            :                          filemgr_header_revnum_t *header_revnum);
+<span class="lineNum">     256 </span>                :            : fdb_status filemgr_fetch_header(struct filemgr *file, uint64_t bid,
+<span class="lineNum">     257 </span>                :            :                                 void *buf, size_t *len, fdb_seqnum_t *seqnum,
+<span class="lineNum">     258 </span>                :            :                                 filemgr_header_revnum_t *header_revnum,
+<span class="lineNum">     259 </span>                :            :                                 uint64_t *deltasize, uint64_t *version,
+<span class="lineNum">     260 </span>                :            :                                 err_log_callback *log_callback);
+<span class="lineNum">     261 </span>                :            : uint64_t filemgr_fetch_prev_header(struct filemgr *file, uint64_t bid,
+<span class="lineNum">     262 </span>                :            :                                    void *buf, size_t *len, fdb_seqnum_t *seqnum,
+<span class="lineNum">     263 </span>                :            :                                    filemgr_header_revnum_t *revnum,
+<span class="lineNum">     264 </span>                :            :                                    uint64_t *deltasize, uint64_t *version,
+<span class="lineNum">     265 </span>                :            :                                    err_log_callback *log_callback);
+<span class="lineNum">     266 </span>                :            : fdb_status filemgr_close(struct filemgr *file,
+<span class="lineNum">     267 </span>                :            :                          bool cleanup_cache_onclose,
+<span class="lineNum">     268 </span>                :            :                          const char *orig_file_name,
+<span class="lineNum">     269 </span>                :            :                          err_log_callback *log_callback);
+<span class="lineNum">     270 </span>                :            : 
+<span class="lineNum">     271 </span>                :            : void filemgr_remove_all_buffer_blocks(struct filemgr *file);
+<a name="272"><span class="lineNum">     272 </span>                :            : void filemgr_free_func(struct hash_elem *h);</a>
+<span class="lineNum">     273 </span>                :            : 
+<span class="lineNum">     274 </span>                :<span class="lineCov">      69531 : INLINE bid_t filemgr_get_next_alloc_block(struct filemgr *file)</span>
+<span class="lineNum">     275 </span>                :            : {
+<span class="lineNum">     276 </span>                :<span class="lineCov">      69531 :     return atomic_get_uint64_t(&amp;file-&gt;pos) / file-&gt;blocksize;</span>
+<span class="lineNum">     277 </span>                :            : }
+<span class="lineNum">     278 </span>                :            : bid_t filemgr_alloc(struct filemgr *file, err_log_callback *log_callback);
+<span class="lineNum">     279 </span>                :            : void filemgr_alloc_multiple(struct filemgr *file, int nblock, bid_t *begin,
+<span class="lineNum">     280 </span>                :            :                             bid_t *end, err_log_callback *log_callback);
+<span class="lineNum">     281 </span>                :            : bid_t filemgr_alloc_multiple_cond(struct filemgr *file, bid_t nextbid, int nblock,
+<span class="lineNum">     282 </span>                :            :                                   bid_t *begin, bid_t *end,
+<span class="lineNum">     283 </span>                :            :                                   err_log_callback *log_callback);
 <span class="lineNum">     284 </span>                :            : 
-<span class="lineNum">     285 </span>                :            : struct kvs_ops_stat *filemgr_migrate_op_stats(struct filemgr *old_file,
-<span class="lineNum">     286 </span>                :            :                                               struct filemgr *new_file,
-<span class="lineNum">     287 </span>                :            :                                               struct kvs_info *kvs);
-<span class="lineNum">     288 </span>                :            : fdb_status filemgr_destroy_file(char *filename,
-<span class="lineNum">     289 </span>                :            :                                 struct filemgr_config *config,
-<span class="lineNum">     290 </span>                :            :                                 struct hash *destroy_set);
+<span class="lineNum">     285 </span>                :            : // Returns true if the block invalidated is from recent uncommited blocks
+<span class="lineNum">     286 </span>                :            : bool filemgr_invalidate_block(struct filemgr *file, bid_t bid);
+<span class="lineNum">     287 </span>                :            : bool filemgr_is_fully_resident(struct filemgr *file);
+<span class="lineNum">     288 </span>                :            : // returns number of immutable blocks that remain in file
+<span class="lineNum">     289 </span>                :            : uint64_t filemgr_flush_immutable(struct filemgr *file,
+<span class="lineNum">     290 </span>                :            :                                  err_log_callback *log_callback);
 <span class="lineNum">     291 </span>                :            : 
-<span class="lineNum">     292 </span>                :            : struct filemgr *filemgr_search_stale_links(struct filemgr *cur_file);
-<span class="lineNum">     293 </span>                :            : typedef char *filemgr_redirect_hdr_func(uint8_t *buf, char *new_filename,
-<span class="lineNum">     294 </span>                :            :                                        uint16_t new_filename_len);
-<span class="lineNum">     295 </span>                :            : char *filemgr_redirect_old_file(struct filemgr *very_old_file,
-<a name="296"><span class="lineNum">     296 </span>                :            :                                 struct filemgr *new_file,</a>
-<span class="lineNum">     297 </span>                :            :                                 filemgr_redirect_hdr_func redirect_func);
-<span class="lineNum">     298 </span>                :<span class="lineCov">   10750661 : INLINE file_status_t filemgr_get_file_status(struct filemgr *file)</span>
-<span class="lineNum">     299 </span>                :            : {
-<a name="300"><span class="lineNum">     300 </span>                :<span class="lineCov">   10750661 :     return atomic_get_uint8_t(&amp;file-&gt;status);</span></a>
-<span class="lineNum">     301 </span>                :            : }
-<span class="lineNum">     302 </span>                :<span class="lineCov">   23688259 : INLINE uint64_t filemgr_get_pos(struct filemgr *file)</span>
-<span class="lineNum">     303 </span>                :            : {
-<span class="lineNum">     304 </span>                :<span class="lineCov">   23688259 :     return atomic_get_uint64_t(&amp;file-&gt;pos);</span>
-<span class="lineNum">     305 </span>                :            : }
-<span class="lineNum">     306 </span>                :            : 
-<span class="lineNum">     307 </span>                :            : bool filemgr_is_rollback_on(struct filemgr *file);
-<span class="lineNum">     308 </span>                :            : void filemgr_set_rollback(struct filemgr *file, uint8_t new_val);
-<span class="lineNum">     309 </span>                :            : 
-<span class="lineNum">     310 </span>                :            : void filemgr_set_in_place_compaction(struct filemgr *file,
-<span class="lineNum">     311 </span>                :            :                                      bool in_place_compaction);
-<span class="lineNum">     312 </span>                :            : bool filemgr_is_in_place_compaction_set(struct filemgr *file);
-<span class="lineNum">     313 </span>                :            : 
-<span class="lineNum">     314 </span>                :            : void filemgr_mutex_openlock(struct filemgr_config *config);
-<span class="lineNum">     315 </span>                :            : void filemgr_mutex_openunlock(void);
-<span class="lineNum">     316 </span>                :            : 
-<span class="lineNum">     317 </span>                :            : void filemgr_mutex_lock(struct filemgr *file);
-<span class="lineNum">     318 </span>                :            : bool filemgr_mutex_trylock(struct filemgr *file);
-<span class="lineNum">     319 </span>                :            : void filemgr_mutex_unlock(struct filemgr *file);
-<span class="lineNum">     320 </span>                :            : 
-<span class="lineNum">     321 </span>                :            : void filemgr_set_dirty_root(struct filemgr *file,
-<a name="322"><span class="lineNum">     322 </span>                :            :                             bid_t dirty_idtree_root,</a>
-<span class="lineNum">     323 </span>                :            :                             bid_t dirty_seqtree_root);
-<span class="lineNum">     324 </span>                :<span class="lineCov">    3662109 : INLINE void filemgr_get_dirty_root(struct filemgr *file,</span>
-<span class="lineNum">     325 </span>                :            :                                    bid_t *dirty_idtree_root,
-<span class="lineNum">     326 </span>                :            :                                    bid_t *dirty_seqtree_root)
-<span class="lineNum">     327 </span>                :            : {
-<span class="lineNum">     328 </span>                :<span class="lineCov">    3662109 :     *dirty_idtree_root = atomic_get_uint64_t(&amp;file-&gt;header.dirty_idtree_root);</span>
-<span class="lineNum">     329 </span>                :<span class="lineCov">    3662109 :     *dirty_seqtree_root = atomic_get_uint64_t(&amp;file-&gt;header.dirty_seqtree_root);</span>
-<a name="330"><span class="lineNum">     330 </span>                :<span class="lineCov">    3662109 : }</span></a>
-<span class="lineNum">     331 </span>                :            : 
-<span class="lineNum">     332 </span>                :<span class="lineCov">    1004390 : INLINE bool filemgr_dirty_root_exist(struct filemgr *file)</span>
-<span class="lineNum">     333 </span>                :            : {
-<span class="lineNum">     334 </span>  [<span class="branchCov" title="Branch 1 was taken 998935 times"> + </span><span class="branchCov" title="Branch 2 was taken 5286 times"> + </span><span class="branchCov" title="Branch 3 was taken 14 times"> + </span><span class="branchCov" title="Branch 4 was taken 999422 times"> + </span>]:<span class="lineCov">    2003826 :     return (atomic_get_uint64_t(&amp;file-&gt;header.dirty_idtree_root)  != BLK_NOT_FOUND ||</span>
-<span class="lineNum">     335 </span>                :<span class="lineCov">    2003657 :             atomic_get_uint64_t(&amp;file-&gt;header.dirty_seqtree_root) != BLK_NOT_FOUND);</span>
-<span class="lineNum">     336 </span>                :            : }
-<span class="lineNum">     337 </span>                :            : 
-<span class="lineNum">     338 </span>                :            : bool filemgr_is_commit_header(void *head_buffer, size_t blocksize);
+<span class="lineNum">     292 </span>                :            : fdb_status filemgr_read(struct filemgr *file,
+<span class="lineNum">     293 </span>                :            :                         bid_t bid, void *buf,
+<span class="lineNum">     294 </span>                :            :                         err_log_callback *log_callback,
+<span class="lineNum">     295 </span>                :            :                         bool read_on_cache_miss);
+<span class="lineNum">     296 </span>                :            : 
+<span class="lineNum">     297 </span>                :            : fdb_status filemgr_write_offset(struct filemgr *file, bid_t bid, uint64_t offset,
+<span class="lineNum">     298 </span>                :            :                           uint64_t len, void *buf, bool final_write,
+<span class="lineNum">     299 </span>                :            :                           err_log_callback *log_callback);
+<span class="lineNum">     300 </span>                :            : fdb_status filemgr_write(struct filemgr *file, bid_t bid, void *buf,
+<a name="301"><span class="lineNum">     301 </span>                :            :                    err_log_callback *log_callback);</a>
+<span class="lineNum">     302 </span>                :            : ssize_t filemgr_write_blocks(struct filemgr *file, void *buf, unsigned num_blocks, bid_t start_bid);
+<span class="lineNum">     303 </span>                :<span class="lineCov">   67083816 : INLINE int filemgr_is_writable(struct filemgr *file, bid_t bid)</span>
+<span class="lineNum">     304 </span>                :            : {
+<span class="lineNum">     305 </span>                :<span class="lineCov">   67083816 :     uint64_t pos = bid * file-&gt;blocksize;</span>
+<span class="lineNum">     306 </span>                :            :     // Note that we don't need to grab file-&gt;lock here because
+<span class="lineNum">     307 </span>                :            :     // 1) both file-&gt;pos and file-&gt;last_commit are only incremented.
+<span class="lineNum">     308 </span>                :            :     // 2) file-&gt;last_commit is updated using the value of file-&gt;pos,
+<span class="lineNum">     309 </span>                :            :     //    and always equal to or smaller than file-&gt;pos.
+<span class="lineNum">     310 </span>  [<span class="branchCov" title="Branch 1 was taken 67347959 times"> + </span><span class="branchCov" title="Branch 3 was taken 50006661 times"> + </span><span class="branchCov" title="Branch 4 was taken 17360908 times"> + </span><span class="branchCov" title="Branch 2 was taken 33580 times"> + </span>]:<span class="lineCov">  134451385 :     return (pos &lt;  atomic_get_uint64_t(&amp;file-&gt;pos) &amp;&amp;</span>
+<span class="lineNum">     311 </span>                :<span class="lineCov">  134747746 :             pos &gt;= atomic_get_uint64_t(&amp;file-&gt;last_commit));</span>
+<span class="lineNum">     312 </span>                :            : }
+<a name="313"><span class="lineNum">     313 </span>                :            : void filemgr_remove_file(struct filemgr *file);</a>
+<span class="lineNum">     314 </span>                :            : 
+<span class="lineNum">     315 </span>                :<span class="lineCov">      77597 : INLINE void filemgr_set_io_inprog(struct filemgr *file)</span>
+<span class="lineNum">     316 </span>                :            : {
+<span class="lineNum">     317 </span>                :<span class="lineCov">      77597 :     atomic_incr_uint8_t(&amp;file-&gt;io_in_prog);</span>
+<a name="318"><span class="lineNum">     318 </span>                :<span class="lineCov">      77597 : }</span></a>
+<span class="lineNum">     319 </span>                :            : 
+<span class="lineNum">     320 </span>                :<span class="lineCov">      77597 : INLINE void filemgr_clear_io_inprog(struct filemgr *file)</span>
+<span class="lineNum">     321 </span>                :            : {
+<span class="lineNum">     322 </span>                :<span class="lineCov">      77597 :     atomic_decr_uint8_t(&amp;file-&gt;io_in_prog);</span>
+<span class="lineNum">     323 </span>                :<span class="lineCov">      77597 : }</span>
+<span class="lineNum">     324 </span>                :            : 
+<span class="lineNum">     325 </span>                :            : fdb_status filemgr_commit(struct filemgr *file, bool sync,
+<span class="lineNum">     326 </span>                :            :                           err_log_callback *log_callback);
+<span class="lineNum">     327 </span>                :            : fdb_status filemgr_sync(struct filemgr *file,
+<span class="lineNum">     328 </span>                :            :                         err_log_callback *log_callback);
+<span class="lineNum">     329 </span>                :            : 
+<span class="lineNum">     330 </span>                :            : fdb_status filemgr_shutdown();
+<span class="lineNum">     331 </span>                :            : int filemgr_update_file_status(struct filemgr *file, file_status_t status,
+<span class="lineNum">     332 </span>                :            :                                 char *old_filename);
+<span class="lineNum">     333 </span>                :            : void filemgr_set_compaction_state(struct filemgr *old_file,
+<span class="lineNum">     334 </span>                :            :                                   struct filemgr *new_file,
+<span class="lineNum">     335 </span>                :            :                                   file_status_t status);
+<span class="lineNum">     336 </span>                :            : void filemgr_remove_pending(struct filemgr *old_file,
+<span class="lineNum">     337 </span>                :            :                             struct filemgr *new_file,
+<span class="lineNum">     338 </span>                :            :                             err_log_callback *log_callback);
 <span class="lineNum">     339 </span>                :            : 
-<span class="lineNum">     340 </span>                :            : void filemgr_set_throttling_delay(struct filemgr *file, uint64_t delay_us);
-<span class="lineNum">     341 </span>                :            : uint32_t filemgr_get_throttling_delay(struct filemgr *file);
-<span class="lineNum">     342 </span>                :            : 
-<span class="lineNum">     343 </span>                :            : void _kvs_stat_set(struct filemgr *file,
-<span class="lineNum">     344 </span>                :            :                    fdb_kvs_id_t kv_id,
-<span class="lineNum">     345 </span>                :            :                    struct kvs_stat stat);
-<span class="lineNum">     346 </span>                :            : void _kvs_stat_update_attr(struct filemgr *file,
-<span class="lineNum">     347 </span>                :            :                            fdb_kvs_id_t kv_id,
-<span class="lineNum">     348 </span>                :            :                            kvs_stat_attr_t attr,
-<span class="lineNum">     349 </span>                :            :                            int delta);
-<span class="lineNum">     350 </span>                :            : int _kvs_stat_get_kv_header(struct kvs_header *kv_header,
-<span class="lineNum">     351 </span>                :            :                             fdb_kvs_id_t kv_id,
-<span class="lineNum">     352 </span>                :            :                             struct kvs_stat *stat);
-<span class="lineNum">     353 </span>                :            : int _kvs_stat_get(struct filemgr *file,
-<span class="lineNum">     354 </span>                :            :                   fdb_kvs_id_t kv_id,
-<span class="lineNum">     355 </span>                :            :                   struct kvs_stat *stat);
-<span class="lineNum">     356 </span>                :            : uint64_t _kvs_stat_get_sum(struct filemgr *file,
-<span class="lineNum">     357 </span>                :            :                            kvs_stat_attr_t attr);
-<span class="lineNum">     358 </span>                :            : int _kvs_ops_stat_get_kv_header(struct kvs_header *kv_header,
-<span class="lineNum">     359 </span>                :            :                                 fdb_kvs_id_t kv_id,
-<span class="lineNum">     360 </span>                :            :                                 struct kvs_ops_stat *stat);
-<span class="lineNum">     361 </span>                :            : int _kvs_ops_stat_get(struct filemgr *file,
-<span class="lineNum">     362 </span>                :            :                       fdb_kvs_id_t kv_id,
-<span class="lineNum">     363 </span>                :            :                       struct kvs_ops_stat *stat);
-<span class="lineNum">     364 </span>                :            : 
-<span class="lineNum">     365 </span>                :            : void _init_op_stats(struct kvs_ops_stat *stat);
-<span class="lineNum">     366 </span>                :            : struct kvs_ops_stat *filemgr_get_ops_stats(struct filemgr *file,
-<span class="lineNum">     367 </span>                :            :                                           struct kvs_info *info);
-<span class="lineNum">     368 </span>                :            : #ifdef __cplusplus
-<span class="lineNum">     369 </span>                :            : }
-<span class="lineNum">     370 </span>                :            : #endif
-<span class="lineNum">     371 </span>                :            : 
-<span class="lineNum">     372 </span>                :            : #endif
+<span class="lineNum">     340 </span>                :            : /**
+<span class="lineNum">     341 </span>                :            :  * Return name of the latency stat given its type.
+<span class="lineNum">     342 </span>                :            :  * @param stat The type of the latency stat to be named.
+<span class="lineNum">     343 </span>                :            :  */
+<span class="lineNum">     344 </span>                :            : const char *filemgr_latency_stat_name(fdb_latency_stat_type stat);
+<span class="lineNum">     345 </span>                :            : 
+<span class="lineNum">     346 </span>                :            : #ifdef _LATENCY_STATS
+<span class="lineNum">     347 </span>                :            : /**
+<span class="lineNum">     348 </span>                :            :  * Initialize a latency stats instance
+<span class="lineNum">     349 </span>                :            :  *
+<span class="lineNum">     350 </span>                :            :  * @param val Pointer to a latency stats instance to be initialized
+<span class="lineNum">     351 </span>                :            :  */
+<span class="lineNum">     352 </span>                :            : void filemgr_init_latency_stat(struct latency_stat *val);
+<span class="lineNum">     353 </span>                :            : 
+<span class="lineNum">     354 </span>                :            : /**
+<span class="lineNum">     355 </span>                :            :  * Destroy a latency stats instance
+<span class="lineNum">     356 </span>                :            :  *
+<span class="lineNum">     357 </span>                :            :  * @param val Pointer to a latency stats instance to be destroyed
+<span class="lineNum">     358 </span>                :            :  */
+<span class="lineNum">     359 </span>                :            : void filemgr_destroy_latency_stat(struct latency_stat *val);
+<span class="lineNum">     360 </span>                :            : 
+<span class="lineNum">     361 </span>                :            : /**
+<span class="lineNum">     362 </span>                :            :  * Migrate the latency stats from the source file to the destination file
+<span class="lineNum">     363 </span>                :            :  *
+<span class="lineNum">     364 </span>                :            :  * @param oldf Pointer to the source file manager
+<span class="lineNum">     365 </span>                :            :  * @param newf Pointer to the destination file manager
+<span class="lineNum">     366 </span>                :            :  */
+<span class="lineNum">     367 </span>                :            : void filemgr_migrate_latency_stats(struct filemgr *src,
+<span class="lineNum">     368 </span>                :            :                                    struct filemgr *dest);
+<span class="lineNum">     369 </span>                :            : 
+<span class="lineNum">     370 </span>                :            : /**
+<span class="lineNum">     371 </span>                :            :  * Update the latency stats for a given file manager
+<span class="lineNum">     372 </span>                :            :  *
+<span class="lineNum">     373 </span>                :            :  * @param file Pointer to the file manager whose latency stats need to be updated
+<span class="lineNum">     374 </span>                :            :  * @param type Type of a latency stat to be updated
+<span class="lineNum">     375 </span>                :            :  * @param val New value of a latency stat
+<span class="lineNum">     376 </span>                :            :  */
+<span class="lineNum">     377 </span>                :            : void filemgr_update_latency_stat(struct filemgr *file,
+<span class="lineNum">     378 </span>                :            :                                  fdb_latency_stat_type type,
+<span class="lineNum">     379 </span>                :            :                                  uint32_t val);
+<span class="lineNum">     380 </span>                :            : 
+<span class="lineNum">     381 </span>                :            : /**
+<span class="lineNum">     382 </span>                :            :  * Get the latency stats from a given file manager
+<span class="lineNum">     383 </span>                :            :  *
+<span class="lineNum">     384 </span>                :            :  * @param file Pointer to the file manager
+<span class="lineNum">     385 </span>                :            :  * @param type Type of a latency stat to be retrieved
+<span class="lineNum">     386 </span>                :            :  * @param stat Pointer to the stats instance to be populated
+<span class="lineNum">     387 </span>                :            :  */
+<span class="lineNum">     388 </span>                :            : void filemgr_get_latency_stat(struct filemgr *file,
+<span class="lineNum">     389 </span>                :            :                               fdb_latency_stat_type type,
+<span class="lineNum">     390 </span>                :            :                               fdb_latency_stat *stat);
+<span class="lineNum">     391 </span>                :            : 
+<span class="lineNum">     392 </span>                :            : #ifdef _LATENCY_STATS_DUMP_TO_FILE
+<span class="lineNum">     393 </span>                :            : /**
+<span class="lineNum">     394 </span>                :            :  * Write all the latency stats for a given file manager to a stat log file
+<span class="lineNum">     395 </span>                :            :  *
+<span class="lineNum">     396 </span>                :            :  * @param file Pointer to the file manager
+<span class="lineNum">     397 </span>                :            :  * @param log_callback Pointer to the log callback function
+<span class="lineNum">     398 </span>                :            :  */
+<span class="lineNum">     399 </span>                :            : void filemgr_dump_latency_stat(struct filemgr *file,
+<span class="lineNum">     400 </span>                :            :                                err_log_callback *log_callback);
+<span class="lineNum">     401 </span>                :            : 
+<span class="lineNum">     402 </span>                :            : #endif // _LATENCY_STATS_DUMP_TO_FILE
+<span class="lineNum">     403 </span>                :            : #endif // _LATENCY_STATS
+<span class="lineNum">     404 </span>                :            : 
+<span class="lineNum">     405 </span>                :            : struct kvs_ops_stat *filemgr_migrate_op_stats(struct filemgr *old_file,
+<span class="lineNum">     406 </span>                :            :                                               struct filemgr *new_file,
+<span class="lineNum">     407 </span>                :            :                                               struct kvs_info *kvs);
+<span class="lineNum">     408 </span>                :            : fdb_status filemgr_destroy_file(char *filename,
+<span class="lineNum">     409 </span>                :            :                                 struct filemgr_config *config,
+<span class="lineNum">     410 </span>                :            :                                 struct hash *destroy_set);
+<span class="lineNum">     411 </span>                :            : 
+<span class="lineNum">     412 </span>                :            : struct filemgr *filemgr_search_stale_links(struct filemgr *cur_file);
+<span class="lineNum">     413 </span>                :            : typedef char *filemgr_redirect_hdr_func(struct filemgr *old_file,uint8_t *buf,
+<span class="lineNum">     414 </span>                :            :                                         struct filemgr *new_file);
+<span class="lineNum">     415 </span>                :            : 
+<span class="lineNum">     416 </span>                :            : char *filemgr_redirect_old_file(struct filemgr *very_old_file,
+<a name="417"><span class="lineNum">     417 </span>                :            :                                 struct filemgr *new_file,</a>
+<span class="lineNum">     418 </span>                :            :                                 filemgr_redirect_hdr_func redirect_func);
+<span class="lineNum">     419 </span>                :<span class="lineCov">   18021390 : INLINE file_status_t filemgr_get_file_status(struct filemgr *file)</span>
+<span class="lineNum">     420 </span>                :            : {
+<a name="421"><span class="lineNum">     421 </span>                :<span class="lineCov">   18021390 :     return atomic_get_uint8_t(&amp;file-&gt;status);</span></a>
+<span class="lineNum">     422 </span>                :            : }
+<span class="lineNum">     423 </span>                :<span class="lineCov">   37894202 : INLINE uint64_t filemgr_get_pos(struct filemgr *file)</span>
+<span class="lineNum">     424 </span>                :            : {
+<span class="lineNum">     425 </span>                :<span class="lineCov">   37894202 :     return atomic_get_uint64_t(&amp;file-&gt;pos);</span>
+<span class="lineNum">     426 </span>                :            : }
+<span class="lineNum">     427 </span>                :            : 
+<span class="lineNum">     428 </span>                :            : fdb_status filemgr_copy_file_range(struct filemgr *src_file,
+<span class="lineNum">     429 </span>                :            :                                    struct filemgr *dst_file,
+<span class="lineNum">     430 </span>                :            :                                    bid_t src_bid, bid_t dst_bid,
+<span class="lineNum">     431 </span>                :            :                                    bid_t clone_len);
+<span class="lineNum">     432 </span>                :            : 
+<span class="lineNum">     433 </span>                :            : bool filemgr_is_rollback_on(struct filemgr *file);
+<span class="lineNum">     434 </span>                :            : void filemgr_set_rollback(struct filemgr *file, uint8_t new_val);
+<span class="lineNum">     435 </span>                :            : 
+<span class="lineNum">     436 </span>                :            : void filemgr_set_in_place_compaction(struct filemgr *file,
+<span class="lineNum">     437 </span>                :            :                                      bool in_place_compaction);
+<span class="lineNum">     438 </span>                :            : bool filemgr_is_in_place_compaction_set(struct filemgr *file);
+<span class="lineNum">     439 </span>                :            : 
+<span class="lineNum">     440 </span>                :            : void filemgr_mutex_openlock(struct filemgr_config *config);
+<span class="lineNum">     441 </span>                :            : void filemgr_mutex_openunlock(void);
+<span class="lineNum">     442 </span>                :            : 
+<span class="lineNum">     443 </span>                :            : void filemgr_mutex_lock(struct filemgr *file);
+<span class="lineNum">     444 </span>                :            : bool filemgr_mutex_trylock(struct filemgr *file);
+<span class="lineNum">     445 </span>                :            : void filemgr_mutex_unlock(struct filemgr *file);
+<span class="lineNum">     446 </span>                :            : 
+<span class="lineNum">     447 </span>                :            : void filemgr_set_dirty_root(struct filemgr *file,
+<a name="448"><span class="lineNum">     448 </span>                :            :                             bid_t dirty_idtree_root,</a>
+<span class="lineNum">     449 </span>                :            :                             bid_t dirty_seqtree_root);
+<span class="lineNum">     450 </span>                :<span class="lineCov">    6908516 : INLINE void filemgr_get_dirty_root(struct filemgr *file,</span>
+<span class="lineNum">     451 </span>                :            :                                    bid_t *dirty_idtree_root,
+<span class="lineNum">     452 </span>                :            :                                    bid_t *dirty_seqtree_root)
+<span class="lineNum">     453 </span>                :            : {
+<span class="lineNum">     454 </span>                :<span class="lineCov">    6908516 :     *dirty_idtree_root = atomic_get_uint64_t(&amp;file-&gt;header.dirty_idtree_root);</span>
+<span class="lineNum">     455 </span>                :<span class="lineCov">    6908068 :     *dirty_seqtree_root = atomic_get_uint64_t(&amp;file-&gt;header.dirty_seqtree_root);</span>
+<a name="456"><span class="lineNum">     456 </span>                :<span class="lineCov">    6908332 : }</span></a>
+<span class="lineNum">     457 </span>                :            : 
+<span class="lineNum">     458 </span>                :<span class="lineCov">    1337253 : INLINE bool filemgr_dirty_root_exist(struct filemgr *file)</span>
+<span class="lineNum">     459 </span>                :            : {
+<span class="lineNum">     460 </span>  [<span class="branchCov" title="Branch 1 was taken 1335375 times"> + </span><span class="branchCov" title="Branch 2 was taken 1099 times"> + </span><span class="branchCov" title="Branch 3 was taken 7 times"> + </span><span class="branchCov" title="Branch 4 was taken 1335706 times"> + </span>]:<span class="lineCov">    2672966 :     return (atomic_get_uint64_t(&amp;file-&gt;header.dirty_idtree_root)  != BLK_NOT_FOUND ||</span>
+<span class="lineNum">     461 </span>                :<span class="lineCov">    2672187 :             atomic_get_uint64_t(&amp;file-&gt;header.dirty_seqtree_root) != BLK_NOT_FOUND);</span>
+<span class="lineNum">     462 </span>                :            : }
+<span class="lineNum">     463 </span>                :            : 
+<span class="lineNum">     464 </span>                :            : bool filemgr_is_commit_header(void *head_buffer, size_t blocksize);
+<span class="lineNum">     465 </span>                :            : 
+<span class="lineNum">     466 </span>                :            : bool filemgr_is_cow_supported(struct filemgr *src, struct filemgr *dst);
+<span class="lineNum">     467 </span>                :            : 
+<span class="lineNum">     468 </span>                :            : void filemgr_set_throttling_delay(struct filemgr *file, uint64_t delay_us);
+<span class="lineNum">     469 </span>                :            : uint32_t filemgr_get_throttling_delay(struct filemgr *file);
+<span class="lineNum">     470 </span>                :            : 
+<span class="lineNum">     471 </span>                :            : INLINE void filemgr_set_stale_list(struct filemgr *file,
+<span class="lineNum">     472 </span>                :            :                             struct list *stale_list)
+<span class="lineNum">     473 </span>                :            : {
+<span class="lineNum">     474 </span>                :            :     file-&gt;stale_list = stale_list;
+<a name="475"><span class="lineNum">     475 </span>                :            : }</a>
+<span class="lineNum">     476 </span>                :            : void filemgr_clear_stale_list(struct filemgr *file);
+<span class="lineNum">     477 </span>                :<span class="lineCov">       2130 : INLINE struct list * filemgr_get_stale_list(struct filemgr *file)</span>
+<span class="lineNum">     478 </span>                :            : {
+<span class="lineNum">     479 </span>                :<span class="lineCov">       2130 :     return file-&gt;stale_list;</span>
+<span class="lineNum">     480 </span>                :            : }
+<span class="lineNum">     481 </span>                :            : 
+<span class="lineNum">     482 </span>                :            : /**
+<span class="lineNum">     483 </span>                :            :  * Add an item into stale-block list of the given 'file'.
+<span class="lineNum">     484 </span>                :            :  *
+<span class="lineNum">     485 </span>                :            :  * @param file Pointer to file handle.
+<span class="lineNum">     486 </span>                :            :  * @param pos Byte offset to the beginning of the stale region.
+<span class="lineNum">     487 </span>                :            :  * @param len Length of the stale region.
+<span class="lineNum">     488 </span>                :            :  * @return void.
+<span class="lineNum">     489 </span>                :            :  */
+<span class="lineNum">     490 </span>                :            : void filemgr_add_stale_block(struct filemgr *file,
+<span class="lineNum">     491 </span>                :            :                              bid_t pos,
+<span class="lineNum">     492 </span>                :            :                              size_t len);
+<span class="lineNum">     493 </span>                :            : 
+<span class="lineNum">     494 </span>                :            : /**
+<span class="lineNum">     495 </span>                :            :  * Calculate the actual space (including block markers) used for the given document
+<span class="lineNum">     496 </span>                :            :  * data, and return the list of regions to be marked as stale (if the given document
+<span class="lineNum">     497 </span>                :            :  * is not physically consecutive, more than one regions will be returned).
+<span class="lineNum">     498 </span>                :            :  *
+<span class="lineNum">     499 </span>                :            :  * @param file Pointer to file handle.
+<span class="lineNum">     500 </span>                :            :  * @param offset Byte offset to the beginning of the data.
+<span class="lineNum">     501 </span>                :            :  * @param length Length of the data.
+<span class="lineNum">     502 </span>                :            :  * @return List of stale regions.
+<span class="lineNum">     503 </span>                :            :  */
+<span class="lineNum">     504 </span>                :            : struct stale_regions filemgr_actual_stale_regions(struct filemgr *file,
+<span class="lineNum">     505 </span>                :            :                                                   bid_t offset,
+<span class="lineNum">     506 </span>                :            :                                                   size_t length);
+<span class="lineNum">     507 </span>                :            : 
+<span class="lineNum">     508 </span>                :            : /**
+<span class="lineNum">     509 </span>                :            :  * Mark the given region (offset, length) as stale.
+<span class="lineNum">     510 </span>                :            :  * This function automatically calculates the additional space used for block
+<span class="lineNum">     511 </span>                :            :  * markers or block matadata, by internally calling filemgr_actual_stale_regions().
+<span class="lineNum">     512 </span>                :            :  *
+<span class="lineNum">     513 </span>                :            :  * @param file Pointer to file handle.
+<span class="lineNum">     514 </span>                :            :  * @param offset Byte offset to the beginning of the data.
+<span class="lineNum">     515 </span>                :            :  * @param length Length of the data.
+<span class="lineNum">     516 </span>                :            :  * @return void.
+<span class="lineNum">     517 </span>                :            :  */
+<span class="lineNum">     518 </span>                :            : void filemgr_mark_stale(struct filemgr *file,
+<span class="lineNum">     519 </span>                :            :                         bid_t offset,
+<span class="lineNum">     520 </span>                :            :                         size_t length);
+<span class="lineNum">     521 </span>                :            : 
+<span class="lineNum">     522 </span>                :            : void _kvs_stat_set(struct filemgr *file,
+<span class="lineNum">     523 </span>                :            :                    fdb_kvs_id_t kv_id,
+<span class="lineNum">     524 </span>                :            :                    struct kvs_stat stat);
+<span class="lineNum">     525 </span>                :            : void _kvs_stat_update_attr(struct filemgr *file,
+<span class="lineNum">     526 </span>                :            :                            fdb_kvs_id_t kv_id,
+<span class="lineNum">     527 </span>                :            :                            kvs_stat_attr_t attr,
+<span class="lineNum">     528 </span>                :            :                            int delta);
+<span class="lineNum">     529 </span>                :            : int _kvs_stat_get_kv_header(struct kvs_header *kv_header,
+<span class="lineNum">     530 </span>                :            :                             fdb_kvs_id_t kv_id,
+<span class="lineNum">     531 </span>                :            :                             struct kvs_stat *stat);
+<span class="lineNum">     532 </span>                :            : int _kvs_stat_get(struct filemgr *file,
+<span class="lineNum">     533 </span>                :            :                   fdb_kvs_id_t kv_id,
+<span class="lineNum">     534 </span>                :            :                   struct kvs_stat *stat);
+<span class="lineNum">     535 </span>                :            : uint64_t _kvs_stat_get_sum(struct filemgr *file,
+<span class="lineNum">     536 </span>                :            :                            kvs_stat_attr_t attr);
+<span class="lineNum">     537 </span>                :            : int _kvs_ops_stat_get_kv_header(struct kvs_header *kv_header,
+<span class="lineNum">     538 </span>                :            :                                 fdb_kvs_id_t kv_id,
+<span class="lineNum">     539 </span>                :            :                                 struct kvs_ops_stat *stat);
+<span class="lineNum">     540 </span>                :            : int _kvs_ops_stat_get(struct filemgr *file,
+<span class="lineNum">     541 </span>                :            :                       fdb_kvs_id_t kv_id,
+<span class="lineNum">     542 </span>                :            :                       struct kvs_ops_stat *stat);
+<span class="lineNum">     543 </span>                :            : 
+<span class="lineNum">     544 </span>                :            : void _init_op_stats(struct kvs_ops_stat *stat);
+<span class="lineNum">     545 </span>                :            : struct kvs_ops_stat *filemgr_get_ops_stats(struct filemgr *file,
+<span class="lineNum">     546 </span>                :            :                                           struct kvs_info *info);
+<span class="lineNum">     547 </span>                :            : #ifdef __cplusplus
+<span class="lineNum">     548 </span>                :            : }
+<span class="lineNum">     549 </span>                :            : #endif
+<span class="lineNum">     550 </span>                :            : 
+<span class="lineNum">     551 </span>                :            : #endif
 </pre>
       </td>
     </tr>

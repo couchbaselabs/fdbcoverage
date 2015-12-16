@@ -1,0 +1,372 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info.cleaned - utils/timing.cc</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">utils</a> - timing.cc<span style="font-size: 80%;"> (source / <a href="timing.cc.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info.cleaned</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">60</td>
+            <td class="headerCovTableEntry">105</td>
+            <td class="headerCovTableEntryLo">57.1 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2015-12-15</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">15</td>
+            <td class="headerCovTableEntryLo">66.7 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">12</td>
+            <td class="headerCovTableEntry">32</td>
+            <td class="headerCovTableEntryLo">37.5 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /* timed api wrapper methods */</a>
+<span class="lineNum">       2 </span>                :            : 
+<span class="lineNum">       3 </span>                :            : #if defined(__APPLE__)
+<span class="lineNum">       4 </span>                :            : #include &lt;mach/mach_time.h&gt;
+<span class="lineNum">       5 </span>                :            : #endif
+<span class="lineNum">       6 </span>                :            : #if defined(WIN32)
+<span class="lineNum">       7 </span>                :            : #include &lt;Windows.h&gt;
+<span class="lineNum">       8 </span>                :            : #else
+<span class="lineNum">       9 </span>                :            : #include &lt;sys/time.h&gt;
+<span class="lineNum">      10 </span>                :            : #endif
+<span class="lineNum">      11 </span>                :            : #if !defined(WIN32) &amp;&amp; !defined(_WIN32)
+<span class="lineNum">      12 </span>                :            : #include &lt;unistd.h&gt;
+<span class="lineNum">      13 </span>                :            : #endif
+<span class="lineNum">      14 </span>                :            : 
+<span class="lineNum">      15 </span>                :            : #include &lt;stdlib.h&gt;
+<span class="lineNum">      16 </span>                :            : #include &lt;string.h&gt;
+<span class="lineNum">      17 </span>                :            : #include &lt;stdint.h&gt;
+<span class="lineNum">      18 </span>                :            : #include &lt;time.h&gt;
+<span class="lineNum">      19 </span>                :            : 
+<span class="lineNum">      20 </span>                :            : #include &quot;libforestdb/forestdb.h&quot;
+<span class="lineNum">      21 </span>                :            : #include &quot;config.h&quot;
+<a name="22"><span class="lineNum">      22 </span>                :            : #include &quot;timing.h&quot;</a>
+<span class="lineNum">      23 </span>                :            : 
+<span class="lineNum">      24 </span>                :<span class="lineNoCov">          0 : ts_nsec timed_fdb_commit(fdb_file_handle *fhandle, bool walflush){</span>
+<span class="lineNum">      25 </span>                :            : 
+<span class="lineNum">      26 </span>                :            :   ts_nsec start, end;
+<span class="lineNum">      27 </span>                :            :   fdb_status status;
+<span class="lineNum">      28 </span>                :            : 
+<span class="lineNum">      29 </span>                :<span class="lineNoCov">          0 :   start = get_monotonic_ts();</span>
+<span class="lineNum">      30 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :   if(walflush){</span>
+<span class="lineNum">      31 </span>                :<span class="lineNoCov">          0 :     status = fdb_commit(fhandle, FDB_COMMIT_MANUAL_WAL_FLUSH);</span>
+<span class="lineNum">      32 </span>                :            :   } else {
+<span class="lineNum">      33 </span>                :<span class="lineNoCov">          0 :     status = fdb_commit(fhandle, FDB_COMMIT_NORMAL);</span>
+<span class="lineNum">      34 </span>                :            :   }
+<span class="lineNum">      35 </span>                :            : 
+<span class="lineNum">      36 </span>                :<span class="lineNoCov">          0 :   end = get_monotonic_ts();</span>
+<span class="lineNum">      37 </span>                :            : 
+<span class="lineNum">      38 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :   if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">      39 </span>                :<span class="lineNoCov">          0 :     return ts_diff(start, end);</span>
+<span class="lineNum">      40 </span>                :            :   } else {
+<span class="lineNum">      41 </span>                :<span class="lineNoCov">          0 :     return ERR_NS;</span>
+<span class="lineNum">      42 </span>                :            :   }
+<a name="43"><span class="lineNum">      43 </span>                :            : }</a>
+<span class="lineNum">      44 </span>                :            : 
+<span class="lineNum">      45 </span>                :<span class="lineNoCov">          0 : ts_nsec timed_fdb_compact(fdb_file_handle *fhandle){</span>
+<span class="lineNum">      46 </span>                :            : 
+<span class="lineNum">      47 </span>                :            :   ts_nsec start, end;
+<span class="lineNum">      48 </span>                :            :   fdb_status status;
+<span class="lineNum">      49 </span>                :            : 
+<span class="lineNum">      50 </span>                :<span class="lineNoCov">          0 :   start = get_monotonic_ts();</span>
+<span class="lineNum">      51 </span>                :<span class="lineNoCov">          0 :   status = fdb_compact(fhandle, NULL);</span>
+<span class="lineNum">      52 </span>                :            : 
+<span class="lineNum">      53 </span>                :<span class="lineNoCov">          0 :   end = get_monotonic_ts();</span>
+<span class="lineNum">      54 </span>                :            : 
+<span class="lineNum">      55 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :   if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">      56 </span>                :<span class="lineNoCov">          0 :     return ts_diff(start, end);</span>
+<span class="lineNum">      57 </span>                :            :   } else {
+<span class="lineNum">      58 </span>                :<span class="lineNoCov">          0 :     return ERR_NS;</span>
+<span class="lineNum">      59 </span>                :            :   }
+<a name="60"><span class="lineNum">      60 </span>                :            : }</a>
+<span class="lineNum">      61 </span>                :            : 
+<span class="lineNum">      62 </span>                :<span class="lineNoCov">          0 : ts_nsec timed_fdb_set(fdb_kvs_handle *kv, fdb_doc *doc){</span>
+<span class="lineNum">      63 </span>                :            : 
+<span class="lineNum">      64 </span>                :            :   ts_nsec start, end;
+<span class="lineNum">      65 </span>                :            :   fdb_status status;
+<span class="lineNum">      66 </span>                :            : 
+<span class="lineNum">      67 </span>                :<span class="lineNoCov">          0 :   start = get_monotonic_ts();</span>
+<span class="lineNum">      68 </span>                :<span class="lineNoCov">          0 :   status = fdb_set(kv, doc);</span>
+<span class="lineNum">      69 </span>                :<span class="lineNoCov">          0 :   end = get_monotonic_ts();</span>
+<span class="lineNum">      70 </span>                :            : 
+<span class="lineNum">      71 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :   if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">      72 </span>                :<span class="lineNoCov">          0 :     return ts_diff(start, end);</span>
+<span class="lineNum">      73 </span>                :            :   } else {
+<span class="lineNum">      74 </span>                :<span class="lineNoCov">          0 :     return ERR_NS;</span>
+<span class="lineNum">      75 </span>                :            :   }
+<a name="76"><span class="lineNum">      76 </span>                :            : }</a>
+<span class="lineNum">      77 </span>                :            : 
+<span class="lineNum">      78 </span>                :<span class="lineNoCov">          0 : ts_nsec timed_fdb_get(fdb_kvs_handle *kv, fdb_doc *doc){</span>
+<span class="lineNum">      79 </span>                :            : 
+<span class="lineNum">      80 </span>                :            :   ts_nsec start, end;
+<span class="lineNum">      81 </span>                :            :   fdb_status status;
+<span class="lineNum">      82 </span>                :            : 
+<span class="lineNum">      83 </span>                :<span class="lineNoCov">          0 :   start = get_monotonic_ts();</span>
+<span class="lineNum">      84 </span>                :<span class="lineNoCov">          0 :   status = fdb_get(kv, doc);</span>
+<span class="lineNum">      85 </span>                :<span class="lineNoCov">          0 :   end = get_monotonic_ts();</span>
+<span class="lineNum">      86 </span>                :            : 
+<span class="lineNum">      87 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :   if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">      88 </span>                :<span class="lineNoCov">          0 :     return ts_diff(start, end);</span>
+<span class="lineNum">      89 </span>                :            :   } else {
+<span class="lineNum">      90 </span>                :<span class="lineNoCov">          0 :     return ERR_NS;</span>
+<span class="lineNum">      91 </span>                :            :   }
+<a name="92"><span class="lineNum">      92 </span>                :            : }</a>
+<span class="lineNum">      93 </span>                :            : 
+<span class="lineNum">      94 </span>                :<span class="lineCov">      20000 : ts_nsec timed_fdb_delete(fdb_kvs_handle *kv, fdb_doc *doc){</span>
+<span class="lineNum">      95 </span>                :            : 
+<span class="lineNum">      96 </span>                :            :   ts_nsec start, end;
+<span class="lineNum">      97 </span>                :            :   fdb_status status;
+<span class="lineNum">      98 </span>                :            : 
+<span class="lineNum">      99 </span>                :<span class="lineCov">      20000 :   start = get_monotonic_ts();</span>
+<span class="lineNum">     100 </span>                :<span class="lineCov">      20000 :   status = fdb_del(kv, doc);</span>
+<span class="lineNum">     101 </span>                :<span class="lineCov">      20000 :   end = get_monotonic_ts();</span>
+<span class="lineNum">     102 </span>                :            : 
+<span class="lineNum">     103 </span>        [<span class="branchCov" title="Branch 0 was taken 20000 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">      20000 :   if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     104 </span>                :<span class="lineCov">      20000 :     return ts_diff(start, end);</span>
+<span class="lineNum">     105 </span>                :            :   } else {
+<span class="lineNum">     106 </span>                :<span class="lineNoCov">          0 :     return ERR_NS;</span>
+<span class="lineNum">     107 </span>                :            :   }
+<a name="108"><span class="lineNum">     108 </span>                :            : }</a>
+<span class="lineNum">     109 </span>                :            : 
+<span class="lineNum">     110 </span>                :<span class="lineNoCov">          0 : ts_nsec timed_fdb_snapshot(fdb_kvs_handle *kv, fdb_kvs_handle **snap_kv){</span>
+<span class="lineNum">     111 </span>                :            : 
+<span class="lineNum">     112 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     113 </span>                :            :     fdb_status status;
+<span class="lineNum">     114 </span>                :            : 
+<span class="lineNum">     115 </span>                :<span class="lineNoCov">          0 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     116 </span>                :<span class="lineNoCov">          0 :     status = fdb_snapshot_open(kv, snap_kv, FDB_SNAPSHOT_INMEM);</span>
+<span class="lineNum">     117 </span>                :<span class="lineNoCov">          0 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     118 </span>                :            : 
+<span class="lineNum">     119 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     120 </span>                :<span class="lineNoCov">          0 :       return ts_diff(start, end);</span>
+<span class="lineNum">     121 </span>                :            :     } else {
+<span class="lineNum">     122 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     123 </span>                :            :     }
+<span class="lineNum">     124 </span>                :            : 
+<a name="125"><span class="lineNum">     125 </span>                :            : }</a>
+<span class="lineNum">     126 </span>                :            : 
+<span class="lineNum">     127 </span>                :<span class="lineCov">        265 : ts_nsec timed_fdb_kvs_close(fdb_kvs_handle *kv){</span>
+<span class="lineNum">     128 </span>                :            : 
+<span class="lineNum">     129 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     130 </span>                :            :     fdb_status status;
+<span class="lineNum">     131 </span>                :            : 
+<span class="lineNum">     132 </span>                :<span class="lineCov">        265 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     133 </span>                :<span class="lineCov">        265 :     status = fdb_kvs_close(kv);</span>
+<span class="lineNum">     134 </span>                :<span class="lineCov">        265 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     135 </span>                :            : 
+<span class="lineNum">     136 </span>        [<span class="branchCov" title="Branch 0 was taken 265 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        265 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     137 </span>                :<span class="lineCov">        265 :       return ts_diff(start, end);</span>
+<span class="lineNum">     138 </span>                :            :     } else {
+<span class="lineNum">     139 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     140 </span>                :            :     }
+<span class="lineNum">     141 </span>                :            : 
+<a name="142"><span class="lineNum">     142 </span>                :            : }</a>
+<span class="lineNum">     143 </span>                :            : 
+<span class="lineNum">     144 </span>                :<span class="lineCov">         25 : ts_nsec timed_fdb_close(fdb_file_handle *fhandle){</span>
+<span class="lineNum">     145 </span>                :            : 
+<span class="lineNum">     146 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     147 </span>                :            :     fdb_status status;
+<span class="lineNum">     148 </span>                :            : 
+<span class="lineNum">     149 </span>                :<span class="lineCov">         25 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     150 </span>                :<span class="lineCov">         25 :     status = fdb_close(fhandle);</span>
+<span class="lineNum">     151 </span>                :<span class="lineCov">         25 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     152 </span>                :            : 
+<span class="lineNum">     153 </span>        [<span class="branchCov" title="Branch 0 was taken 25 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">         25 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     154 </span>                :<span class="lineCov">         25 :       return ts_diff(start, end);</span>
+<span class="lineNum">     155 </span>                :            :     } else {
+<span class="lineNum">     156 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     157 </span>                :            :     }
+<span class="lineNum">     158 </span>                :            : 
+<a name="159"><span class="lineNum">     159 </span>                :            : }</a>
+<span class="lineNum">     160 </span>                :            : 
+<span class="lineNum">     161 </span>                :<span class="lineCov">          7 : ts_nsec timed_fdb_shutdown(){</span>
+<span class="lineNum">     162 </span>                :            : 
+<span class="lineNum">     163 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     164 </span>                :            :     fdb_status status;
+<span class="lineNum">     165 </span>                :            : 
+<span class="lineNum">     166 </span>                :<span class="lineCov">          7 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     167 </span>                :<span class="lineCov">          7 :     status = fdb_shutdown();</span>
+<span class="lineNum">     168 </span>                :<span class="lineCov">          7 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     169 </span>                :            : 
+<span class="lineNum">     170 </span>        [<span class="branchCov" title="Branch 0 was taken 7 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">          7 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     171 </span>                :<span class="lineCov">          7 :       return ts_diff(start, end);</span>
+<span class="lineNum">     172 </span>                :            :     } else {
+<span class="lineNum">     173 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     174 </span>                :            :     }
+<span class="lineNum">     175 </span>                :            : 
+<a name="176"><span class="lineNum">     176 </span>                :            : }</a>
+<span class="lineNum">     177 </span>                :            : 
+<span class="lineNum">     178 </span>                :<span class="lineCov">        131 : ts_nsec timed_fdb_iterator_init(fdb_kvs_handle *kv, fdb_iterator **it){</span>
+<span class="lineNum">     179 </span>                :            : 
+<span class="lineNum">     180 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     181 </span>                :            :     fdb_status status;
+<span class="lineNum">     182 </span>                :            : 
+<span class="lineNum">     183 </span>                :<span class="lineCov">        131 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     184 </span>                :<span class="lineCov">        133 :     status = fdb_iterator_init(kv, it, NULL, 0, NULL, 0, FDB_ITR_NONE);</span>
+<span class="lineNum">     185 </span>                :<span class="lineCov">        133 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     186 </span>                :            : 
+<span class="lineNum">     187 </span>        [<span class="branchCov" title="Branch 0 was taken 133 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        133 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     188 </span>                :<span class="lineCov">        133 :       return ts_diff(start, end);</span>
+<span class="lineNum">     189 </span>                :            :     } else {
+<span class="lineNum">     190 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     191 </span>                :            :     }
+<span class="lineNum">     192 </span>                :            : 
+<span class="lineNum">     193 </span>                :            : 
+<a name="194"><span class="lineNum">     194 </span>                :            : }</a>
+<span class="lineNum">     195 </span>                :            : 
+<span class="lineNum">     196 </span>                :<span class="lineCov">     643890 : ts_nsec timed_fdb_iterator_get(fdb_iterator *it, fdb_doc **doc){</span>
+<span class="lineNum">     197 </span>                :            : 
+<span class="lineNum">     198 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     199 </span>                :            :     fdb_status status;
+<span class="lineNum">     200 </span>                :            : 
+<span class="lineNum">     201 </span>                :<span class="lineCov">     643890 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     202 </span>                :<span class="lineCov">     646382 :     status = fdb_iterator_get(it, doc);</span>
+<span class="lineNum">     203 </span>                :<span class="lineCov">     652275 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     204 </span>                :            : 
+<span class="lineNum">     205 </span>        [<span class="branchCov" title="Branch 0 was taken 658084 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">     658084 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     206 </span>                :<span class="lineCov">     658084 :       return ts_diff(start, end);</span>
+<span class="lineNum">     207 </span>                :            :     } else {
+<span class="lineNum">     208 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     209 </span>                :            :     }
+<span class="lineNum">     210 </span>                :            : 
+<a name="211"><span class="lineNum">     211 </span>                :            : }</a>
+<span class="lineNum">     212 </span>                :            : 
+<span class="lineNum">     213 </span>                :<span class="lineCov">     635246 : ts_nsec timed_fdb_iterator_next(fdb_iterator *it){</span>
+<span class="lineNum">     214 </span>                :            : 
+<span class="lineNum">     215 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     216 </span>                :            :     fdb_status status;
+<span class="lineNum">     217 </span>                :            : 
+<span class="lineNum">     218 </span>                :<span class="lineCov">     635246 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     219 </span>                :<span class="lineCov">     655120 :     status = fdb_iterator_next(it);</span>
+<span class="lineNum">     220 </span>                :<span class="lineCov">     624778 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     221 </span>                :            : 
+<span class="lineNum">     222 </span>        [<span class="branchCov" title="Branch 0 was taken 645827 times"> + </span><span class="branchCov" title="Branch 1 was taken 133 times"> + </span>]:<span class="lineCov">     645960 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     223 </span>                :<span class="lineCov">     645827 :       return ts_diff(start, end);</span>
+<span class="lineNum">     224 </span>                :            :     } else {
+<span class="lineNum">     225 </span>                :<span class="lineCov">        133 :       return ERR_NS;</span>
+<span class="lineNum">     226 </span>                :            :     }
+<span class="lineNum">     227 </span>                :            : 
+<a name="228"><span class="lineNum">     228 </span>                :            : }</a>
+<span class="lineNum">     229 </span>                :            : 
+<span class="lineNum">     230 </span>                :<span class="lineCov">        133 : ts_nsec timed_fdb_iterator_close(fdb_iterator *it){</span>
+<span class="lineNum">     231 </span>                :            : 
+<span class="lineNum">     232 </span>                :            :     ts_nsec start, end;
+<span class="lineNum">     233 </span>                :            :     fdb_status status;
+<span class="lineNum">     234 </span>                :            : 
+<span class="lineNum">     235 </span>                :<span class="lineCov">        133 :     start = get_monotonic_ts();</span>
+<span class="lineNum">     236 </span>                :<span class="lineCov">        133 :     status = fdb_iterator_close(it);</span>
+<span class="lineNum">     237 </span>                :<span class="lineCov">        133 :     end = get_monotonic_ts();</span>
+<span class="lineNum">     238 </span>                :            : 
+<span class="lineNum">     239 </span>        [<span class="branchCov" title="Branch 0 was taken 133 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        133 :     if(status == FDB_RESULT_SUCCESS){</span>
+<span class="lineNum">     240 </span>                :<span class="lineCov">        133 :       return ts_diff(start, end);</span>
+<span class="lineNum">     241 </span>                :            :     } else {
+<span class="lineNum">     242 </span>                :<span class="lineNoCov">          0 :       return ERR_NS;</span>
+<span class="lineNum">     243 </span>                :            :     }
+<span class="lineNum">     244 </span>                :            : 
+<span class="lineNum">     245 </span>                :            : }
+<span class="lineNum">     246 </span>                :            : 
+<span class="lineNum">     247 </span>                :            : /*
+<a name="248"><span class="lineNum">     248 </span>                :            :     return a monotonically increasing value with a seconds frequency.</a>
+<span class="lineNum">     249 </span>                :            : */
+<span class="lineNum">     250 </span>                :<span class="lineCov">    2380839 : ts_nsec get_monotonic_ts() {</span>
+<span class="lineNum">     251 </span>                :<span class="lineCov">    2380839 :     ts_nsec ts = 0;</span>
+<span class="lineNum">     252 </span>                :            : #if defined(WIN32)
+<span class="lineNum">     253 </span>                :            :     /* GetTickCound64 gives us near 60years of ticks...*/
+<span class="lineNum">     254 </span>                :            :     ts =  GetTickCount64() * 1000;  // TODO: this is not true high-res microseconds on windows
+<span class="lineNum">     255 </span>                :            : #elif defined(__APPLE__)
+<span class="lineNum">     256 </span>                :            :     long time = mach_absolute_time();
+<span class="lineNum">     257 </span>                :            : 
+<span class="lineNum">     258 </span>                :            :     static mach_timebase_info_data_t timebase;
+<span class="lineNum">     259 </span>                :            :     if (timebase.denom == 0) {
+<span class="lineNum">     260 </span>                :            :       mach_timebase_info(&amp;timebase);
+<span class="lineNum">     261 </span>                :            :     }
+<span class="lineNum">     262 </span>                :            : 
+<span class="lineNum">     263 </span>                :            :     ts = (double)time * timebase.numer / timebase.denom;
+<span class="lineNum">     264 </span>                :            : #elif defined(__linux__) || defined(__sun)
+<span class="lineNum">     265 </span>                :            :     /* Linux and Solaris can use clock_gettime */
+<span class="lineNum">     266 </span>                :            :     struct timespec tm;
+<span class="lineNum">     267 </span>        [<span class="branchNoCov" title="Branch 1 was not taken"> - </span><span class="branchCov" title="Branch 2 was taken 1892760 times"> + </span>]:<span class="lineCov">    2380839 :     if (clock_gettime(CLOCK_MONOTONIC, &amp;tm) == -1) {</span>
+<span class="lineNum">     268 </span>                :<span class="lineNoCov">          0 :         abort();</span>
+<span class="lineNum">     269 </span>                :            :     }
+<span class="lineNum">     270 </span>                :<span class="lineCov">    1892760 :     ts = tm.tv_nsec;</span>
+<span class="lineNum">     271 </span>                :            : #else
+<span class="lineNum">     272 </span>                :            : #error &quot;Don't know how to build get_monotonic_ts&quot;
+<span class="lineNum">     273 </span>                :            : #endif
+<span class="lineNum">     274 </span>                :            : 
+<span class="lineNum">     275 </span>                :<span class="lineCov">    1892760 :     return ts;</span>
+<a name="276"><span class="lineNum">     276 </span>                :            : }</a>
+<span class="lineNum">     277 </span>                :            : 
+<span class="lineNum">     278 </span>                :<span class="lineCov">    1298870 : ts_nsec ts_diff(ts_nsec start, ts_nsec end)</span>
+<span class="lineNum">     279 </span>                :            : {
+<span class="lineNum">     280 </span>                :<span class="lineCov">    1298870 :     ts_nsec diff = 0;</span>
+<span class="lineNum">     281 </span>        [<span class="branchCov" title="Branch 0 was taken 57730 times"> + </span><span class="branchCov" title="Branch 1 was taken 1241140 times"> + </span>]:<span class="lineCov">    1298870 :     if ((end-start)&lt;0) {</span>
+<span class="lineNum">     282 </span>                :<span class="lineCov">      57730 :         diff  = 1000000000+end-start;</span>
+<span class="lineNum">     283 </span>                :            :     } else {
+<span class="lineNum">     284 </span>                :<span class="lineCov">    1241140 :         diff = end-start;</span>
+<span class="lineNum">     285 </span>                :            :     }
+<span class="lineNum">     286 </span>                :<span class="lineCov">    1298870 :     return diff/1000;</span>
+<span class="lineNum">     287 </span>                :            : }
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>

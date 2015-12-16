@@ -1,0 +1,406 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - coverage.info.cleaned - src/bgflusher.cc</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">src</a> - bgflusher.cc<span style="font-size: 80%;"> (source / <a href="bgflusher.cc.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">coverage.info.cleaned</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">90</td>
+            <td class="headerCovTableEntry">140</td>
+            <td class="headerCovTableEntryLo">64.3 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2015-12-15</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">6</td>
+            <td class="headerCovTableEntry">7</td>
+            <td class="headerCovTableEntryMed">85.7 %</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntry">29</td>
+            <td class="headerCovTableEntry">90</td>
+            <td class="headerCovTableEntryLo">32.2 %</td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">           Branch data     Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>                :            : /* -*- Mode: C++; tab-width: 4; c-basic-offset: 4; indent-tabs-mode: nil -*- */</a>
+<span class="lineNum">       2 </span>                :            : /*
+<span class="lineNum">       3 </span>                :            :  *     Copyright 2010 Couchbase, Inc
+<span class="lineNum">       4 </span>                :            :  *
+<span class="lineNum">       5 </span>                :            :  *   Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+<span class="lineNum">       6 </span>                :            :  *   you may not use this file except in compliance with the License.
+<span class="lineNum">       7 </span>                :            :  *   You may obtain a copy of the License at
+<span class="lineNum">       8 </span>                :            :  *
+<span class="lineNum">       9 </span>                :            :  *       http://www.apache.org/licenses/LICENSE-2.0
+<span class="lineNum">      10 </span>                :            :  *
+<span class="lineNum">      11 </span>                :            :  *   Unless required by applicable law or agreed to in writing, software
+<span class="lineNum">      12 </span>                :            :  *   distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+<span class="lineNum">      13 </span>                :            :  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+<span class="lineNum">      14 </span>                :            :  *   See the License for the specific language governing permissions and
+<span class="lineNum">      15 </span>                :            :  *   limitations under the License.
+<span class="lineNum">      16 </span>                :            :  */
+<span class="lineNum">      17 </span>                :            : 
+<span class="lineNum">      18 </span>                :            : // TODO: Consolidate Various ForestDB Tasks into a Shared Thread Pool
+<span class="lineNum">      19 </span>                :            : 
+<span class="lineNum">      20 </span>                :            : #include &lt;stdio.h&gt;
+<span class="lineNum">      21 </span>                :            : #include &lt;stdlib.h&gt;
+<span class="lineNum">      22 </span>                :            : #include &lt;string.h&gt;
+<span class="lineNum">      23 </span>                :            : #include &lt;fcntl.h&gt;
+<span class="lineNum">      24 </span>                :            : #if !defined(WIN32) &amp;&amp; !defined(_WIN32)
+<span class="lineNum">      25 </span>                :            : #include &lt;sys/time.h&gt;
+<span class="lineNum">      26 </span>                :            : #include &lt;dirent.h&gt;
+<span class="lineNum">      27 </span>                :            : #include &lt;unistd.h&gt;
+<span class="lineNum">      28 </span>                :            : #endif
+<span class="lineNum">      29 </span>                :            : 
+<span class="lineNum">      30 </span>                :            : #include &quot;libforestdb/forestdb.h&quot;
+<span class="lineNum">      31 </span>                :            : #include &quot;fdb_internal.h&quot;
+<span class="lineNum">      32 </span>                :            : #include &quot;filemgr.h&quot;
+<span class="lineNum">      33 </span>                :            : #include &quot;avltree.h&quot;
+<span class="lineNum">      34 </span>                :            : #include &quot;common.h&quot;
+<span class="lineNum">      35 </span>                :            : #include &quot;bgflusher.h&quot;
+<span class="lineNum">      36 </span>                :            : #include &quot;memleak.h&quot;
+<span class="lineNum">      37 </span>                :            : #include &quot;time_utils.h&quot;
+<span class="lineNum">      38 </span>                :            : 
+<span class="lineNum">      39 </span>                :            : #ifdef __DEBUG
+<span class="lineNum">      40 </span>                :            : #ifndef __DEBUG_CPT
+<span class="lineNum">      41 </span>                :            :     #undef DBG
+<span class="lineNum">      42 </span>                :            :     #undef DBGCMD
+<span class="lineNum">      43 </span>                :            :     #undef DBGSW
+<span class="lineNum">      44 </span>                :            :     #define DBG(...)
+<span class="lineNum">      45 </span>                :            :     #define DBGCMD(...)
+<span class="lineNum">      46 </span>                :            :     #define DBGSW(n, ...)
+<span class="lineNum">      47 </span>                :            : #endif
+<span class="lineNum">      48 </span>                :            : #endif
+<span class="lineNum">      49 </span>                :            : 
+<span class="lineNum">      50 </span>                :            : // variables for initialization
+<span class="lineNum">      51 </span>                :            : volatile uint8_t bgflusher_initialized = 0;
+<span class="lineNum">      52 </span>                :            : static mutex_t bgf_lock;
+<span class="lineNum">      53 </span>                :            : 
+<span class="lineNum">      54 </span>                :            : static size_t num_bgflusher_threads = DEFAULT_NUM_BGFLUSHER_THREADS;
+<span class="lineNum">      55 </span>                :            : static thread_t *bgflusher_tids = NULL;
+<span class="lineNum">      56 </span>                :            : 
+<span class="lineNum">      57 </span>                :            : static size_t sleep_duration = FDB_BGFLUSHER_SLEEP_DURATION;
+<span class="lineNum">      58 </span>                :            : 
+<span class="lineNum">      59 </span>                :            : static mutex_t sync_mutex;
+<span class="lineNum">      60 </span>                :            : static thread_cond_t sync_cond;
+<span class="lineNum">      61 </span>                :            : 
+<span class="lineNum">      62 </span>                :            : static volatile uint8_t bgflusher_terminate_signal = 0;
+<span class="lineNum">      63 </span>                :            : 
+<span class="lineNum">      64 </span>                :            : static struct avl_tree openfiles;
+<span class="lineNum">      65 </span>                :            : 
+<span class="lineNum">      66 </span>                :            : struct openfiles_elem {
+<span class="lineNum">      67 </span>                :            :     char filename[FDB_MAX_FILENAME_LEN];
+<span class="lineNum">      68 </span>                :            :     struct filemgr *file;
+<span class="lineNum">      69 </span>                :            :     fdb_config config;
+<span class="lineNum">      70 </span>                :            :     uint32_t register_count;
+<span class="lineNum">      71 </span>                :            :     bool background_flush_in_progress;
+<span class="lineNum">      72 </span>                :            :     err_log_callback *log_callback;
+<span class="lineNum">      73 </span>                :            :     struct avl_node avl;
+<span class="lineNum">      74 </span>                :            : };
+<a name="75"><span class="lineNum">      75 </span>                :            : </a>
+<span class="lineNum">      76 </span>                :            : // compares file names
+<span class="lineNum">      77 </span>                :<span class="lineCov">      21762 : static int _bgflusher_cmp(struct avl_node *a, struct avl_node *b, void *aux)</span>
+<span class="lineNum">      78 </span>                :            : {
+<span class="lineNum">      79 </span>                :            :     struct openfiles_elem *aa, *bb;
+<span class="lineNum">      80 </span>                :<span class="lineCov">      21762 :     aa = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">      81 </span>                :<span class="lineCov">      21762 :     bb = _get_entry(b, struct openfiles_elem, avl);</span>
+<span class="lineNum">      82 </span>                :<span class="lineCov">      21762 :     return strncmp(aa-&gt;filename, bb-&gt;filename, FDB_MAX_FILENAME_LEN);</span>
+<a name="83"><span class="lineNum">      83 </span>                :            : }</a>
+<span class="lineNum">      84 </span>                :            : 
+<span class="lineNum">      85 </span>                :<span class="lineNoCov">          0 : static void * bgflusher_thread(void *voidargs)</span>
+<span class="lineNum">      86 </span>                :            : {
+<span class="lineNum">      87 </span>                :            :     fdb_status fs;
+<span class="lineNum">      88 </span>                :            :     struct avl_node *a;
+<span class="lineNum">      89 </span>                :            :     struct filemgr *file;
+<span class="lineNum">      90 </span>                :            :     struct openfiles_elem *elem;
+<span class="lineNum">      91 </span>                :<span class="lineNoCov">          0 :     err_log_callback *log_callback = NULL;</span>
+<span class="lineNum">      92 </span>                :            : 
+<span class="lineNum">      93 </span>                :            :     while (1) {
+<span class="lineNum">      94 </span>                :<span class="lineNoCov">          0 :         uint64_t num_blocks = 0;</span>
+<span class="lineNum">      95 </span>                :            : 
+<span class="lineNum">      96 </span>                :<span class="lineNoCov">          0 :         mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">      97 </span>                :<span class="lineNoCov">          0 :         a = avl_first(&amp;openfiles);</span>
+<span class="lineNum">      98 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :         while(a) {</span>
+<span class="lineNum">      99 </span>                :            :             filemgr_open_result ffs;
+<span class="lineNum">     100 </span>                :<span class="lineNoCov">          0 :             elem = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">     101 </span>                :<span class="lineNoCov">          0 :             file = elem-&gt;file;</span>
+<span class="lineNum">     102 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :             if (!file) {</span>
+<span class="lineNum">     103 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 a = avl_next(a);</span>
+<span class="lineNum">     104 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 avl_remove(&amp;openfiles, &amp;elem-&gt;avl);</span>
+<span class="lineNum">     105 </span>                :<span class="lineNoCov">          0 :                 free(elem);</span>
+<span class="lineNum">     106 </span>                :<span class="lineNoCov">          0 :                 continue;</span>
+<span class="lineNum">     107 </span>                :            :             }
+<span class="lineNum">     108 </span>                :            : 
+<span class="lineNum">     109 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :             if (elem-&gt;background_flush_in_progress) {</span>
+<span class="lineNum">     110 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 a = avl_next(a);</span>
+<span class="lineNum">     111 </span>                :            :             } else {
+<span class="lineNum">     112 </span>                :<span class="lineNoCov">          0 :                 elem-&gt;background_flush_in_progress = true;</span>
+<span class="lineNum">     113 </span>                :<span class="lineNoCov">          0 :                 log_callback = elem-&gt;log_callback;</span>
+<span class="lineNum">     114 </span>                :            :                 ffs = filemgr_open(file-&gt;filename, file-&gt;ops,
+<span class="lineNum">     115 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                         file-&gt;config, log_callback);</span>
+<span class="lineNum">     116 </span>                :<span class="lineNoCov">          0 :                 fs = (fdb_status)ffs.rv;</span>
+<span class="lineNum">     117 </span>                :<span class="lineNoCov">          0 :                 mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     118 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 if (fs == FDB_RESULT_SUCCESS) {</span>
+<span class="lineNum">     119 </span>                :            :                     num_blocks += filemgr_flush_immutable(file,
+<span class="lineNum">     120 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                                                           log_callback);</span>
+<span class="lineNum">     121 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                     filemgr_close(file, 0, file-&gt;filename, log_callback);</span>
+<span class="lineNum">     122 </span>                :            : 
+<span class="lineNum">     123 </span>                :            :                 } else {
+<span class="lineNum">     124 </span>                :            :                     fdb_log(log_callback, fs,
+<span class="lineNum">     125 </span>                :            :                             &quot;Failed to open the file '%s' for background flushing\n.&quot;,
+<span class="lineNum">     126 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                             file-&gt;filename);</span>
+<span class="lineNum">     127 </span>                :            :                 }
+<span class="lineNum">     128 </span>                :<span class="lineNoCov">          0 :                 mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     129 </span>                :<span class="lineNoCov">          0 :                 elem-&gt;background_flush_in_progress = false;</span>
+<span class="lineNum">     130 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 a = avl_next(&amp;elem-&gt;avl);</span>
+<span class="lineNum">     131 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :                 if (bgflusher_terminate_signal) {</span>
+<span class="lineNum">     132 </span>                :<span class="lineNoCov">          0 :                     mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     133 </span>                :<span class="lineNoCov">          0 :                     return NULL;</span>
+<span class="lineNum">     134 </span>                :            :                 }
+<span class="lineNum">     135 </span>                :            :             }
+<span class="lineNum">     136 </span>                :            :         }
+<span class="lineNum">     137 </span>                :<span class="lineNoCov">          0 :         mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     138 </span>                :            : 
+<span class="lineNum">     139 </span>                :<span class="lineNoCov">          0 :         mutex_lock(&amp;sync_mutex);</span>
+<span class="lineNum">     140 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :         if (bgflusher_terminate_signal) {</span>
+<span class="lineNum">     141 </span>                :<span class="lineNoCov">          0 :             mutex_unlock(&amp;sync_mutex);</span>
+<span class="lineNum">     142 </span>                :<span class="lineNoCov">          0 :             break;</span>
+<span class="lineNum">     143 </span>                :            :         }
+<span class="lineNum">     144 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :         if (!num_blocks) {</span>
+<span class="lineNum">     145 </span>[<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>][<span class="branchNoExec" title="Branch 4 was not executed"> # </span><span class="branchNoExec" title="Branch 5 was not executed"> # </span>]:<span class="lineNoCov">          0 :             thread_cond_timedwait(&amp;sync_cond, &amp;sync_mutex,</span>
+<span class="lineNum">     146 </span>                :            :                                   (unsigned)(sleep_duration * 1000));
+<span class="lineNum">     147 </span>                :            :         }
+<span class="lineNum">     148 </span>        [<span class="branchNoExec" title="Branch 0 was not executed"> # </span><span class="branchNoExec" title="Branch 1 was not executed"> # </span>]:<span class="lineNoCov">          0 :         if (bgflusher_terminate_signal) {</span>
+<span class="lineNum">     149 </span>                :<span class="lineNoCov">          0 :             mutex_unlock(&amp;sync_mutex);</span>
+<span class="lineNum">     150 </span>                :<span class="lineNoCov">          0 :             break;</span>
+<span class="lineNum">     151 </span>                :            :         }
+<span class="lineNum">     152 </span>                :<span class="lineNoCov">          0 :         mutex_unlock(&amp;sync_mutex);</span>
+<span class="lineNum">     153 </span>                :            :     }
+<span class="lineNum">     154 </span>                :<span class="lineNoCov">          0 :     return NULL;</span>
+<a name="155"><span class="lineNum">     155 </span>                :            : }</a>
+<span class="lineNum">     156 </span>                :            : 
+<span class="lineNum">     157 </span>                :<span class="lineCov">        231 : void bgflusher_init(struct bgflusher_config *config)</span>
+<span class="lineNum">     158 </span>                :            : {
+<span class="lineNum">     159 </span>        [<span class="branchCov" title="Branch 0 was taken 231 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        231 :     if (!bgflusher_initialized) {</span>
+<span class="lineNum">     160 </span>                :            :         // Note that this function is synchronized by spin lock in fdb_init API.
+<span class="lineNum">     161 </span>                :<span class="lineCov">        231 :         mutex_init(&amp;bgf_lock);</span>
+<span class="lineNum">     162 </span>                :            : 
+<span class="lineNum">     163 </span>                :<span class="lineCov">        231 :         mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     164 </span>        [<span class="branchCov" title="Branch 0 was taken 231 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]:<span class="lineCov">        231 :         if (!bgflusher_initialized) {</span>
+<span class="lineNum">     165 </span>                :            :             // initialize
+<span class="lineNum">     166 </span>                :<span class="lineCov">        231 :             avl_init(&amp;openfiles, NULL);</span>
+<span class="lineNum">     167 </span>                :            : 
+<span class="lineNum">     168 </span>                :<span class="lineCov">        231 :             bgflusher_terminate_signal = 0;</span>
+<span class="lineNum">     169 </span>                :            : 
+<span class="lineNum">     170 </span>                :<span class="lineCov">        231 :             mutex_init(&amp;sync_mutex);</span>
+<span class="lineNum">     171 </span>                :<span class="lineCov">        231 :             thread_cond_init(&amp;sync_cond);</span>
+<span class="lineNum">     172 </span>                :            : 
+<span class="lineNum">     173 </span>                :            :             // create worker threads
+<span class="lineNum">     174 </span>                :<span class="lineCov">        231 :             num_bgflusher_threads = config-&gt;num_threads;</span>
+<span class="lineNum">     175 </span>                :            :             bgflusher_tids = (thread_t *) calloc(num_bgflusher_threads,
+<span class="lineNum">     176 </span>                :<span class="lineCov">        231 :                                                  sizeof(thread_t));</span>
+<span class="lineNum">     177 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 231 times"> + </span>]:<span class="lineCov">        231 :             for (size_t i = 0; i &lt; num_bgflusher_threads; ++i) {</span>
+<span class="lineNum">     178 </span>                :<span class="lineNoCov">          0 :                 thread_create(&amp;bgflusher_tids[i], bgflusher_thread, NULL);</span>
+<span class="lineNum">     179 </span>                :            :             }
+<span class="lineNum">     180 </span>                :            : 
+<span class="lineNum">     181 </span>                :<span class="lineCov">        231 :             bgflusher_initialized = 1;</span>
+<span class="lineNum">     182 </span>                :            :         }
+<span class="lineNum">     183 </span>                :<span class="lineCov">        231 :         mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     184 </span>                :            :     }
+<a name="185"><span class="lineNum">     185 </span>                :<span class="lineCov">        231 : }</span></a>
+<span class="lineNum">     186 </span>                :            : 
+<span class="lineNum">     187 </span>                :<span class="lineCov">        231 : void bgflusher_shutdown()</span>
+<span class="lineNum">     188 </span>                :            : {
+<span class="lineNum">     189 </span>                :            :     void *ret;
+<span class="lineNum">     190 </span>                :<span class="lineCov">        231 :     struct avl_node *a = NULL;</span>
+<span class="lineNum">     191 </span>                :            :     struct openfiles_elem *elem;
+<span class="lineNum">     192 </span>                :            : 
+<span class="lineNum">     193 </span>                :            :     // set terminate signal
+<span class="lineNum">     194 </span>                :<span class="lineCov">        231 :     mutex_lock(&amp;sync_mutex);</span>
+<span class="lineNum">     195 </span>                :<span class="lineCov">        231 :     bgflusher_terminate_signal = 1;</span>
+<span class="lineNum">     196 </span>                :<span class="lineCov">        231 :     thread_cond_broadcast(&amp;sync_cond);</span>
+<span class="lineNum">     197 </span>                :<span class="lineCov">        231 :     mutex_unlock(&amp;sync_mutex);</span>
+<span class="lineNum">     198 </span>                :            : 
+<span class="lineNum">     199 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 231 times"> + </span>]:<span class="lineCov">        231 :     for (size_t i = 0; i &lt; num_bgflusher_threads; ++i) {</span>
+<span class="lineNum">     200 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         thread_join(bgflusher_tids[i], &amp;ret);</span>
+<span class="lineNum">     201 </span>                :            :     }
+<span class="lineNum">     202 </span>                :<span class="lineCov">        231 :     free(bgflusher_tids);</span>
+<span class="lineNum">     203 </span>                :            : 
+<span class="lineNum">     204 </span>                :<span class="lineCov">        231 :     mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     205 </span>                :            :     // free all elems in the tree
+<span class="lineNum">     206 </span>        [<span class="branchCov" title="Branch 1 was taken 231 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        231 :     a = avl_first(&amp;openfiles);</span>
+<span class="lineNum">     207 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 231 times"> + </span>]:<span class="lineCov">        231 :     while (a) {</span>
+<span class="lineNum">     208 </span>                :<span class="lineNoCov">          0 :         elem = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">     209 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         a = avl_next(a);</span>
+<span class="lineNum">     210 </span>                :            : 
+<span class="lineNum">     211 </span>        [<span class="branchNoExec" title="Branch 1 was not executed"> # </span><span class="branchNoExec" title="Branch 2 was not executed"> # </span>]:<span class="lineNoCov">          0 :         avl_remove(&amp;openfiles, &amp;elem-&gt;avl);</span>
+<span class="lineNum">     212 </span>                :<span class="lineNoCov">          0 :         free(elem);</span>
+<span class="lineNum">     213 </span>                :            :     }
+<span class="lineNum">     214 </span>                :            : 
+<span class="lineNum">     215 </span>                :<span class="lineCov">        231 :     sleep_duration = FDB_BGFLUSHER_SLEEP_DURATION;</span>
+<span class="lineNum">     216 </span>                :<span class="lineCov">        231 :     bgflusher_initialized = 0;</span>
+<span class="lineNum">     217 </span>                :<span class="lineCov">        231 :     mutex_destroy(&amp;sync_mutex);</span>
+<span class="lineNum">     218 </span>                :<span class="lineCov">        231 :     thread_cond_destroy(&amp;sync_cond);</span>
+<span class="lineNum">     219 </span>                :<span class="lineCov">        231 :     mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     220 </span>                :            : 
+<span class="lineNum">     221 </span>                :<span class="lineCov">        231 :     mutex_destroy(&amp;bgf_lock);</span>
+<a name="222"><span class="lineNum">     222 </span>                :<span class="lineCov">        231 : }</span></a>
+<span class="lineNum">     223 </span>                :            : 
+<span class="lineNum">     224 </span>                :<span class="lineCov">     430783 : fdb_status bgflusher_register_file(struct filemgr *file,</span>
+<span class="lineNum">     225 </span>                :            :                                    fdb_config *config,
+<span class="lineNum">     226 </span>                :            :                                    err_log_callback *log_callback)
+<span class="lineNum">     227 </span>                :            : {
+<span class="lineNum">     228 </span>                :            :     file_status_t fstatus;
+<span class="lineNum">     229 </span>                :<span class="lineCov">     430783 :     fdb_status fs = FDB_RESULT_SUCCESS;</span>
+<span class="lineNum">     230 </span>                :<span class="lineCov">     430783 :     struct avl_node *a = NULL;</span>
+<span class="lineNum">     231 </span>                :            :     struct openfiles_elem query, *elem;
+<span class="lineNum">     232 </span>                :            : 
+<span class="lineNum">     233 </span>                :            :     // Ignore files whose status is FILE_COMPACT_OLD to prevent
+<span class="lineNum">     234 </span>                :            :     // reinserting of files undergoing compaction if it is in the catchup phase
+<span class="lineNum">     235 </span>                :            :     // Also ignore files whose status is REMOVED_PENDING.
+<span class="lineNum">     236 </span>        [<span class="branchCov" title="Branch 1 was taken 293 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">     430783 :     fstatus = filemgr_get_file_status(file);</span>
+<span class="lineNum">     237 </span>        [<span class="branchCov" title="Branch 0 was taken 5233 times"> + </span><span class="branchCov" title="Branch 1 was taken 425257 times"> + </span>]:<span class="lineCov">     430783 :     if (fstatus == FILE_COMPACT_OLD ||</span>
+<span class="lineNum">         </span>  [<span class="branchNoCov" title="Branch 2 was not taken"> - </span><span class="branchCov" title="Branch 3 was taken 5233 times"> + </span><span class="branchCov" title="Branch 0 was taken 293 times"> + </span><span class="branchNoCov" title="Branch 1 was not taken"> - </span>]
+<span class="lineNum">         </span>        [<span class="branchNoCov" title="Branch 2 was not taken"> - </span><span class="branchCov" title="Branch 3 was taken 293 times"> + </span>]
+<span class="lineNum">     238 </span>                :            :         fstatus == FILE_REMOVED_PENDING) {
+<span class="lineNum">     239 </span>                :<span class="lineCov">     425257 :         return fs;</span>
+<span class="lineNum">     240 </span>                :            :     }
+<span class="lineNum">     241 </span>                :            : 
+<span class="lineNum">     242 </span>                :<span class="lineCov">       5526 :     strcpy(query.filename, file-&gt;filename);</span>
+<span class="lineNum">     243 </span>                :            :     // first search the existing file
+<span class="lineNum">     244 </span>                :<span class="lineCov">       5526 :     mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     245 </span>        [<span class="branchCov" title="Branch 1 was taken 5526 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">       5526 :     a = avl_search(&amp;openfiles, &amp;query.avl, _bgflusher_cmp);</span>
+<span class="lineNum">     246 </span>        [<span class="branchCov" title="Branch 0 was taken 410 times"> + </span><span class="branchCov" title="Branch 1 was taken 5116 times"> + </span>]:<span class="lineCov">       5526 :     if (a == NULL) {</span>
+<span class="lineNum">     247 </span>                :            :         // doesn't exist
+<span class="lineNum">     248 </span>                :            :         // create elem and insert into tree
+<span class="lineNum">     249 </span>                :<span class="lineCov">        410 :         elem = (struct openfiles_elem *)calloc(1, sizeof(struct openfiles_elem));</span>
+<span class="lineNum">     250 </span>                :<span class="lineCov">        410 :         elem-&gt;file = file;</span>
+<span class="lineNum">     251 </span>                :<span class="lineCov">        410 :         strcpy(elem-&gt;filename, file-&gt;filename);</span>
+<span class="lineNum">     252 </span>                :<span class="lineCov">        410 :         elem-&gt;config = *config;</span>
+<span class="lineNum">     253 </span>                :<span class="lineCov">        410 :         elem-&gt;register_count = 1;</span>
+<span class="lineNum">     254 </span>                :<span class="lineCov">        410 :         elem-&gt;background_flush_in_progress = false;</span>
+<span class="lineNum">     255 </span>                :<span class="lineCov">        410 :         elem-&gt;log_callback = log_callback;</span>
+<span class="lineNum">     256 </span>        [<span class="branchCov" title="Branch 1 was taken 410 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        410 :         avl_insert(&amp;openfiles, &amp;elem-&gt;avl, _bgflusher_cmp);</span>
+<span class="lineNum">     257 </span>                :            :     } else {
+<span class="lineNum">     258 </span>                :            :         // already exists
+<span class="lineNum">     259 </span>                :<span class="lineCov">       5116 :         elem = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">     260 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 5116 times"> + </span>]:<span class="lineCov">       5116 :         if (!elem-&gt;file) {</span>
+<span class="lineNum">     261 </span>                :<span class="lineNoCov">          0 :             elem-&gt;file = file;</span>
+<span class="lineNum">     262 </span>                :            :         }
+<span class="lineNum">     263 </span>                :<span class="lineCov">       5116 :         elem-&gt;register_count++;</span>
+<span class="lineNum">     264 </span>                :<span class="lineCov">       5116 :         elem-&gt;log_callback = log_callback; // use the latest</span>
+<span class="lineNum">     265 </span>                :            :     }
+<span class="lineNum">     266 </span>                :<span class="lineCov">       5526 :     mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     267 </span>                :<span class="lineCov">     430783 :     return fs;</span>
+<a name="268"><span class="lineNum">     268 </span>                :            : }</a>
+<span class="lineNum">     269 </span>                :            : 
+<span class="lineNum">     270 </span>                :<span class="lineCov">        190 : void bgflusher_switch_file(struct filemgr *old_file, struct filemgr *new_file,</span>
+<span class="lineNum">     271 </span>                :            :                            err_log_callback *log_callback)
+<span class="lineNum">     272 </span>                :            : {
+<span class="lineNum">     273 </span>                :<span class="lineCov">        190 :     struct avl_node *a = NULL;</span>
+<span class="lineNum">     274 </span>                :            :     struct openfiles_elem query, *elem;
+<span class="lineNum">     275 </span>                :            : 
+<span class="lineNum">     276 </span>                :<span class="lineCov">        190 :     strcpy(query.filename, old_file-&gt;filename);</span>
+<span class="lineNum">     277 </span>                :<span class="lineCov">        190 :     mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     278 </span>        [<span class="branchCov" title="Branch 1 was taken 190 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        190 :     a = avl_search(&amp;openfiles, &amp;query.avl, _bgflusher_cmp);</span>
+<span class="lineNum">     279 </span>        [<span class="branchCov" title="Branch 0 was taken 183 times"> + </span><span class="branchCov" title="Branch 1 was taken 7 times"> + </span>]:<span class="lineCov">        190 :     if (a) {</span>
+<span class="lineNum">     280 </span>                :<span class="lineCov">        183 :         elem = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">     281 </span>        [<span class="branchCov" title="Branch 1 was taken 183 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        183 :         avl_remove(&amp;openfiles, a);</span>
+<span class="lineNum">     282 </span>                :<span class="lineCov">        183 :         strcpy(elem-&gt;filename, new_file-&gt;filename);</span>
+<span class="lineNum">     283 </span>                :<span class="lineCov">        183 :         elem-&gt;file = new_file;</span>
+<span class="lineNum">     284 </span>                :<span class="lineCov">        183 :         elem-&gt;register_count = 1;</span>
+<span class="lineNum">     285 </span>                :<span class="lineCov">        183 :         elem-&gt;background_flush_in_progress = false;</span>
+<span class="lineNum">     286 </span>        [<span class="branchCov" title="Branch 1 was taken 183 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        183 :         avl_insert(&amp;openfiles, &amp;elem-&gt;avl, _bgflusher_cmp);</span>
+<span class="lineNum">     287 </span>                :<span class="lineCov">        183 :         mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     288 </span>                :            :     } else {
+<span class="lineNum">     289 </span>                :<span class="lineCov">          7 :         mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     290 </span>                :            :     }
+<a name="291"><span class="lineNum">     291 </span>                :<span class="lineCov">        190 : }</span></a>
+<span class="lineNum">     292 </span>                :            : 
+<span class="lineNum">     293 </span>                :<span class="lineCov">     430784 : void bgflusher_deregister_file(struct filemgr *file)</span>
+<span class="lineNum">     294 </span>                :            : {
+<span class="lineNum">     295 </span>                :<span class="lineCov">     430784 :     struct avl_node *a = NULL;</span>
+<span class="lineNum">     296 </span>                :            :     struct openfiles_elem query, *elem;
+<span class="lineNum">     297 </span>                :            : 
+<span class="lineNum">     298 </span>                :<span class="lineCov">     430784 :     strcpy(query.filename, file-&gt;filename);</span>
+<span class="lineNum">     299 </span>                :<span class="lineCov">     430784 :     mutex_lock(&amp;bgf_lock);</span>
+<span class="lineNum">     300 </span>        [<span class="branchCov" title="Branch 1 was taken 430784 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">     430784 :     a = avl_search(&amp;openfiles, &amp;query.avl, _bgflusher_cmp);</span>
+<span class="lineNum">     301 </span>        [<span class="branchCov" title="Branch 0 was taken 2242 times"> + </span><span class="branchCov" title="Branch 1 was taken 428542 times"> + </span>]:<span class="lineCov">     430784 :     if (a) {</span>
+<span class="lineNum">     302 </span>                :<span class="lineCov">       2242 :         elem = _get_entry(a, struct openfiles_elem, avl);</span>
+<span class="lineNum">     303 </span>        [<span class="branchCov" title="Branch 0 was taken 410 times"> + </span><span class="branchCov" title="Branch 1 was taken 1832 times"> + </span>]:<span class="lineCov">       2242 :         if ((--elem-&gt;register_count) == 0) {</span>
+<span class="lineNum">     304 </span>                :            :             // if no handle refers this file
+<span class="lineNum">     305 </span>        [<span class="branchNoCov" title="Branch 0 was not taken"> - </span><span class="branchCov" title="Branch 1 was taken 410 times"> + </span>]:<span class="lineCov">        410 :             if (elem-&gt;background_flush_in_progress) {</span>
+<span class="lineNum">     306 </span>                :            :                 // Background flusher is writing blocks while the file is closed.
+<span class="lineNum">     307 </span>                :            :                 // Do not remove 'elem' for now. The 'elem' will be automatically
+<span class="lineNum">     308 </span>                :            :                 // removed once background flushing is done. Set elem-&gt;file
+<span class="lineNum">     309 </span>                :            :                 // to NULL to indicate this intent.
+<span class="lineNum">     310 </span>                :<span class="lineNoCov">          0 :                 elem-&gt;file = NULL;</span>
+<span class="lineNum">     311 </span>                :            :             } else {
+<span class="lineNum">     312 </span>                :            :                 // remove from the tree
+<span class="lineNum">     313 </span>        [<span class="branchCov" title="Branch 1 was taken 410 times"> + </span><span class="branchNoCov" title="Branch 2 was not taken"> - </span>]:<span class="lineCov">        410 :                 avl_remove(&amp;openfiles, &amp;elem-&gt;avl);</span>
+<span class="lineNum">     314 </span>                :<span class="lineCov">        410 :                 free(elem);</span>
+<span class="lineNum">     315 </span>                :            :             }
+<span class="lineNum">     316 </span>                :            :         }
+<span class="lineNum">     317 </span>                :            :     }
+<span class="lineNum">     318 </span>                :<span class="lineCov">     430784 :     mutex_unlock(&amp;bgf_lock);</span>
+<span class="lineNum">     319 </span>                :<span class="lineCov">     430784 : }</span>
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
